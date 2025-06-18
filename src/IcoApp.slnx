@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="IcoApp.Core.FileFormat.Tests/IcoApp.Core.FileFormat.Tests.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="IcoApp.Core.FileFormat/IcoApp.Core.FileFormat.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="IcoApp.Core/IcoApp.Core.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
