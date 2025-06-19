@@ -16,9 +16,9 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-using System.Buffers;
+namespace IcoApp.FileFormat.Internal;
 
-namespace IcoApp.Core.FileFormat.Internal;
+using System.Buffers;
 
 internal static class Png
 {

@@ -16,12 +16,11 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.FileFormat;
+namespace IcoApp.FileFormat;
 
 using System.Buffers;
 using System.Collections.Immutable;
-using IcoApp.Core.Helpers;
-using IcoApp.Core.FileFormat.Internal;
+using IcoApp.FileFormat.Internal;
 
 public class IcoBitmapFrame : IcoFrame
 {

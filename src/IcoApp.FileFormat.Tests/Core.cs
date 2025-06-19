@@ -16,7 +16,7 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.FileFormat.Tests;
+namespace IcoApp.FileFormat.Tests;
 
 using System.Buffers;
 using System.Collections.Immutable;

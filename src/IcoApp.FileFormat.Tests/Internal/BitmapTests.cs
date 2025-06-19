@@ -16,15 +16,14 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.FileFormat.Tests.Internal;
+namespace IcoApp.FileFormat.Tests.Internal;
 
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 
 using System;
 using System.Buffers;
-using IcoApp.Core.Helpers;
-using IcoApp.Core.FileFormat.Internal;
+using IcoApp.FileFormat.Internal;
 
 public class BitmapTests
 {

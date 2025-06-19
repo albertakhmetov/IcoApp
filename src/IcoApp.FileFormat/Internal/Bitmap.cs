@@ -16,13 +16,12 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.FileFormat.Internal;
+namespace IcoApp.FileFormat.Internal;
 
 using System;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Numerics;
-using IcoApp.Core.Helpers;
 
 internal sealed class Bitmap
 {

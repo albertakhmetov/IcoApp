@@ -16,10 +16,10 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
+namespace IcoApp.FileFormat;
+
 using System.Buffers;
 using System.Collections.Immutable;
-
-namespace IcoApp.Core.FileFormat;
 
 public abstract class IcoFrame : IDisposable
 {

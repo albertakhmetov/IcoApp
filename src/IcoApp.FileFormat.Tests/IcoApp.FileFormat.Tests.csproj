@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IcoApp.Core.FileFormat\IcoApp.Core.FileFormat.csproj" />
+    <ProjectReference Include="..\IcoApp.FileFormat\IcoApp.FileFormat.csproj" />
   </ItemGroup>
 
   <ItemGroup>
