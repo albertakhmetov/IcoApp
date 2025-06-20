@@ -66,10 +66,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Services\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\IcoApp.Core\IcoApp.Core.csproj" />
 	  <ProjectReference Include="..\IcoApp.FileFormat\IcoApp.FileFormat.csproj" />
 	</ItemGroup>

@@ -21,6 +21,10 @@ namespace IcoApp;
 using System;
 using System.Collections.Immutable;
 using System.Text;
+using IcoApp.Core.Commands;
+using IcoApp.Core.Services;
+using IcoApp.Core.ViewModels;
+using IcoApp.Services;
 using IcoApp.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -87,6 +91,13 @@ public partial class App : Application
         var builder = Host.CreateApplicationBuilder();
 
         builder.Services.AddSingleton<MainWindow>();
+        builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
+
+        builder.Services.AddSingleton<IIcoService, IcoService>();
+
+        builder.Services.AddSingleton<IcoViewModel>();
+        builder.Services.AddSingleton<IcoFramesViewModel>();
+        builder.Services.AddSingleton<URViewModel>();
 
         return builder.Build();
     }

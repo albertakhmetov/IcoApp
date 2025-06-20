@@ -30,35 +30,35 @@ using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 
-public class IcoFileFramesViewModel : ViewModel, IDisposable
+public class IcoFramesViewModel : ViewModel, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
 
-    private readonly IIcoFileService icoFileService;
-    private ItemObservableCollection<IcoFileFrameViewModel> baseItems;
-    private IcoFileFrame? currentItem;
+    private readonly IIcoService icoService;
+    private ItemObservableCollection<IcoFrameViewModel> baseItems;
+    private IcoFrame? currentItem;
 
-    public IcoFileFramesViewModel(IIcoFileService icoFileService)
+    public IcoFramesViewModel(IIcoService icoService)
     {
-        ArgumentNullException.ThrowIfNull(icoFileService);
+        ArgumentNullException.ThrowIfNull(icoService);
 
-        this.icoFileService = icoFileService;
+        this.icoService = icoService;
 
         baseItems = [];
-        Items = new ReadOnlyObservableCollection<IcoFileFrameViewModel>(baseItems);
+        Items = new ReadOnlyObservableCollection<IcoFrameViewModel>(baseItems);
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
-        RemoveFrameCommand = new RelayCommand(x => RemoveFrame(x as IcoFileFrame));
-        ExportFrameCommand = new RelayCommand(x => ExportFrame(x as IcoFileFrame));
+        RemoveFrameCommand = new RelayCommand(x => RemoveFrame(x as IcoFrame));
+        ExportFrameCommand = new RelayCommand(x => ExportFrame(x as IcoFrame));
 
         InitSubscriptions();
     }
 
-    public ReadOnlyObservableCollection<IcoFileFrameViewModel> Items { get; }
+    public ReadOnlyObservableCollection<IcoFrameViewModel> Items { get; }
 
     public bool IsEmpty => Items.Count == 0;
 
-    public IcoFileFrame? CurrentItem
+    public IcoFrame? CurrentItem
     {
         get => currentItem;
         set => Set(ref currentItem, value);
@@ -75,12 +75,12 @@ public class IcoFileFramesViewModel : ViewModel, IDisposable
         throw new NotImplementedException();
     }
 
-    private void RemoveFrame(IcoFileFrame? icoFileFrame)
+    private void RemoveFrame(IcoFrame? frame)
     {
         throw new NotImplementedException();
     }
 
-    private void ExportFrame(IcoFileFrame? icoFileFrame)
+    private void ExportFrame(IcoFrame? frame)
     {
         throw new NotImplementedException();
     }
@@ -100,23 +100,23 @@ public class IcoFileFramesViewModel : ViewModel, IDisposable
             throw new InvalidOperationException("SynchronizationContext.Current can't be null");
         }
 
-        icoFileService
+        icoService
             .Frames
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(UpdateItems)
             .DisposeWith(disposable);
     }
 
-    private void UpdateItems(ItemCollectionAction<IcoFileFrame> action)
+    private void UpdateItems(ItemCollectionAction<IcoFrame> action)
     {
         switch (action.Type)
         {
             case ItemCollectionActionType.Reset:
-                baseItems.Set(action.Items.Select(i => new IcoFileFrameViewModel(i, ExportFrameCommand, RemoveFrameCommand)));
+                baseItems.Set(action.Items.Select(i => new IcoFrameViewModel(i, ExportFrameCommand, RemoveFrameCommand)));
                 break;
 
             case ItemCollectionActionType.Add:
-                baseItems.Insert(action.Items.Select(i => new IcoFileFrameViewModel(i, ExportFrameCommand, RemoveFrameCommand)));
+                baseItems.Insert(action.Items.Select(i => new IcoFrameViewModel(i, ExportFrameCommand, RemoveFrameCommand)));
                 break;
 
             case ItemCollectionActionType.Remove:

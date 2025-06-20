@@ -16,10 +16,18 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Models;
+namespace IcoApp.Core.Services;
 
-public enum IcoFileFrameType
+using System.Collections.Immutable;
+using IcoApp.Core.Models;
+
+public interface IFileService
 {
-    Bitmap,
-    Png,
+    bool IsSupported(string? fileName);
+
+    Stream? ReadUserFile(string fileName);
+
+    Stream WriteUserFile(string fileName, bool overwrite);
+
+    Task<IList<string>> PickMultipleFilesAsync();
 }

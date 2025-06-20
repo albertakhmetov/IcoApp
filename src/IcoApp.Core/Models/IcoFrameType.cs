@@ -16,26 +16,10 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.FileFormat.Internal;
+namespace IcoApp.Core.Models;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-internal static class Extensions
+public enum IcoFrameType
 {
-    public static void IsTrue(this bool result, string? errorMessage = null)
-    {
-        if (!result)
-        {
-            throw new InvalidOperationException(errorMessage);
-        }
-    }
-
-    public static int ToInt32(this long value)
-    {
-        return Convert.ToInt32(value);
-    }
+    Bitmap,
+    Png,
 }

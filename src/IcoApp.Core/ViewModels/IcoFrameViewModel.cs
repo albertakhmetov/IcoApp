@@ -25,9 +25,9 @@ using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 
-public class IcoFileFrameViewModel : ViewModel
+public class IcoFrameViewModel : ViewModel
 {
-    public IcoFileFrameViewModel(IcoFileFrame frame, RelayCommand exportCommand, RelayCommand removeCommand)
+    public IcoFrameViewModel(IcoFrame frame, RelayCommand exportCommand, RelayCommand removeCommand)
     {
         ArgumentNullException.ThrowIfNull(frame);
         ArgumentNullException.ThrowIfNull(exportCommand);
@@ -38,10 +38,10 @@ public class IcoFileFrameViewModel : ViewModel
         RemoveCommand = removeCommand;
 
         Text = $"{Frame.Width}x{Frame.Height}";
-        Description = Frame.Type == IcoFileFrameType.Png? "PNG": $"{Frame.BitCount} bit";
+        Description = Frame.Type == IcoFrameType.Png? "PNG": $"{Frame.BitCount} bit";
     }
 
-    public IcoFileFrame Frame { get; }
+    public IcoFrame Frame { get; }
 
     public string Text { get; }
 

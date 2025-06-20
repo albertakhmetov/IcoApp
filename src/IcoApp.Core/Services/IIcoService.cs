@@ -25,13 +25,13 @@ using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 
-public interface IIcoFileService
+public interface IIcoService
 {
     IObservable<bool> Modified { get; }
 
     IObservable<string?> FileName { get; }
 
-    ItemCollectionBase<IcoFileFrame> Frames { get; }
+    ItemCollectionBase<IcoFrame> Frames { get; }
 
     void CreateNew();
 

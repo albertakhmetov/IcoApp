@@ -28,20 +28,20 @@ using System.Threading.Tasks;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Services;
 
-public class IcoFileViewModel : ViewModel, IDisposable
+public class IcoViewModel : ViewModel, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
 
-    private readonly IIcoFileService icoFileService;
+    private readonly IIcoService icoService;
 
     private string? fileName;
     private bool isModified;
 
-    public IcoFileViewModel(IIcoFileService icoFileService)
+    public IcoViewModel(IIcoService icoService)
     {
-        ArgumentNullException.ThrowIfNull(icoFileService);
+        ArgumentNullException.ThrowIfNull(icoService);
 
-        this.icoFileService = icoFileService;
+        this.icoService = icoService;
 
         fileName = null;
         isModified = false;
@@ -103,21 +103,21 @@ public class IcoFileViewModel : ViewModel, IDisposable
             throw new InvalidOperationException("SynchronizationContext.Current can't be null");
         }
 
-        icoFileService
+        icoService
             .Modified
-            .CombineLatest(icoFileService.FileName)
+            .CombineLatest(icoService.FileName)
             .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(_ => Invalidate(nameof(Name)))
             .DisposeWith(disposable);
 
-        icoFileService
+        icoService
             .Modified
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => IsModified = x)
             .DisposeWith(disposable);
 
-        icoFileService
+        icoService
             .FileName
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => FileName = x)

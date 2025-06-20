@@ -29,8 +29,15 @@ using Microsoft.UI.Xaml.Media;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(IServiceProvider serviceProvider)
+    public MainWindow(
+        IcoViewModel icoViewModel, 
+        IcoFramesViewModel icoFramesViewModel,
+        URViewModel urViewModel)
     {
+        IcoViewModel = icoViewModel;
+        IcoFramesViewModel = icoFramesViewModel;
+        URViewModel = urViewModel;
+
         this.InitializeComponent();
 
         ExtendsContentIntoTitleBar = true;
@@ -46,9 +53,9 @@ public partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
     }
 
+    public IcoViewModel IcoViewModel { get; }
+
+    public IcoFramesViewModel IcoFramesViewModel { get; }
+
     public URViewModel URViewModel { get; }
-
-    public IcoFileViewModel IcoFileViewModel { get; }
-
-    public IcoFileFramesViewModel IcoFileFramesViewModel { get; }
 }

@@ -52,14 +52,6 @@ public class ItemCollection<T> : ItemCollectionBase<T> where T : class
 
     protected override void Clear()
     {
-        foreach (var i in baseList)
-        {
-            if (i is IDisposable item)
-            {
-                item.Dispose();
-            }
-        }
-
         baseList.Clear();
     }
 
@@ -84,11 +76,6 @@ public class ItemCollection<T> : ItemCollectionBase<T> where T : class
 
     protected override void RemoveAt(int index)
     {
-        if (baseList[index] is IDisposable item)
-        {
-            item.Dispose();
-        }
-
         baseList.RemoveAt(index);
     }
 

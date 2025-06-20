@@ -20,26 +20,28 @@ using System.Collections.Immutable;
 
 namespace IcoApp.Core.Models;
 
-public sealed class IcoFileFrame : IComparable<IcoFileFrame>, IDisposable
+public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
 {
-    public IcoFileFrame(int width, int height, Stream? sourceStream)
+    public IcoFrame(int width, int height, Stream? sourceStream)
     {
         Width = width;
         Height = height;
         BitCount = 32;
 
         Data = new ImageData(sourceStream);
-        Type = IcoFileFrameType.Png;
+        Image = Data;
+        Type = IcoFrameType.Png;
     }
 
-    public IcoFileFrame(int width, int height, int bitCount, Stream? sourceStream)
+    public IcoFrame(int width, int height, int bitCount, Stream? sourceStream, Stream? imageStream)
     {
         Width = width;
         Height = height;
         BitCount = bitCount;
 
         Data = new ImageData(sourceStream);
-        Type = IcoFileFrameType.Bitmap;
+        Image = new ImageData(imageStream);
+        Type = IcoFrameType.Bitmap;
     }
 
     public bool IsDisposed { get; private set; } = false;
@@ -50,11 +52,13 @@ public sealed class IcoFileFrame : IComparable<IcoFileFrame>, IDisposable
 
     public int BitCount { get; }
 
-    public IcoFileFrameType Type { get; }
+    public IcoFrameType Type { get; }
 
     public ImageData Data { get; }
 
-    public int CompareTo(IcoFileFrame? other)
+    public ImageData Image { get; }
+
+    public int CompareTo(IcoFrame? other)
     {
         if (other == null)
         {
@@ -70,6 +74,7 @@ public sealed class IcoFileFrame : IComparable<IcoFileFrame>, IDisposable
         if (!IsDisposed)
         {
             Data.Dispose();
+            Image.Dispose();
         }
     }
 }

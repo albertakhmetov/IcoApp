@@ -30,6 +30,7 @@ public class ImageData : IDisposable
     public readonly static ImageData Empty = new(null);
 
     private readonly byte[] buffer;
+    private bool isDisposed = false;
 
     public ImageData(Stream? sourceStream)
     {
@@ -55,9 +56,10 @@ public class ImageData : IDisposable
 
     public void Dispose()
     {
-        if (!IsEmpty)
+        if (!IsEmpty && !isDisposed)
         {
             ArrayPool<byte>.Shared.Return(buffer);
+            isDisposed = true;
         }
     }
 
