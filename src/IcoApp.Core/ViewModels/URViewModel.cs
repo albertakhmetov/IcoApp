@@ -16,23 +16,44 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Commands;
+namespace IcoApp.Core.ViewModels;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Commands;
 
-public interface IAppCommandManager
+internal class URViewModel
 {
-    IObservable<bool> CanUndo { get; }
+    private readonly IAppCommandManager appCommandManager;
 
-    IObservable<bool> CanRedo { get; }
+    public URViewModel(IAppCommandManager appCommandManager)
+    {
+        ArgumentNullException.ThrowIfNull(appCommandManager);
 
-    Task ExecuteAsync<T>(T parameters);
+        this.appCommandManager = appCommandManager;
 
-    void Undo();
+        UndoCommand = new RelayCommand(_ => Undo());
+        RedoCommand = new RelayCommand(_ => Redo());
+    }
 
-    void Redo();
+    public bool CanUndo { get; }
+
+    public bool CanRedo { get; }
+
+    public RelayCommand UndoCommand { get; }
+
+    public RelayCommand RedoCommand { get; }
+
+    private void Undo()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Redo()
+    {
+        throw new NotImplementedException();
+    }
 }

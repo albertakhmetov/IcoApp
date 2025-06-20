@@ -23,6 +23,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +39,14 @@ public class AppCommandManager : IAppCommandManager
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
         this.serviceProvider = serviceProvider;
+
+        CanUndo = undoHistory.Select((bool x) => !x).AsObservable();
+        CanRedo = redoHistory.Select((bool x) => !x).AsObservable();
     }
+
+    public IObservable<bool> CanUndo { get; }
+
+    public IObservable<bool> CanRedo { get; }
 
     public async Task ExecuteAsync<T>(T parameters)
     {
@@ -73,13 +82,19 @@ public class AppCommandManager : IAppCommandManager
         }
     }
 
-    private sealed class History : IEnumerable<IUndoable>
+    private sealed class History : IEnumerable<IUndoable>, IObservable<bool>
     {
         private readonly LinkedList<IUndoable> items = [];
+        private readonly Subject<bool> isEmptySubject = new Subject<bool>();
 
         public int? MaxSize { get; init; } = 10;
 
         public int Count => items.Count;
+
+        public IDisposable Subscribe(IObserver<bool> observer)
+        {
+            return isEmptySubject.StartWith(items.Count == 0).AsObservable().Subscribe(observer);
+        }
 
         public IUndoable Pop()
         {
@@ -99,6 +114,7 @@ public class AppCommandManager : IAppCommandManager
             {
                 undoable = items.Last();
                 items.RemoveLast();
+                isEmptySubject.OnNext(items.Count == 0);
                 return true;
             }
             else
@@ -136,6 +152,7 @@ public class AppCommandManager : IAppCommandManager
             }
 
             items.AddLast(undoable);
+            isEmptySubject.OnNext(items.Count == 0);
         }
 
         public void Clear()
@@ -149,6 +166,7 @@ public class AppCommandManager : IAppCommandManager
             }
 
             items.Clear();
+            isEmptySubject.OnNext(items.Count == 0);
         }
 
         public IEnumerator<IUndoable> GetEnumerator()
