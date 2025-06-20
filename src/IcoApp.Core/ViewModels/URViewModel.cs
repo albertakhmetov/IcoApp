@@ -33,8 +33,6 @@ public class URViewModel : ViewModel
     private readonly CompositeDisposable disposable = [];
     private readonly IAppCommandManager appCommandManager;
 
-    private bool canUndo, canRedo;
-
     public URViewModel(IAppCommandManager appCommandManager)
     {
         ArgumentNullException.ThrowIfNull(appCommandManager);
@@ -47,30 +45,18 @@ public class URViewModel : ViewModel
         InitSubscriptions();
     }
 
-    public bool CanUndo
-    {
-        get => canUndo;
-        private set => Set(ref canUndo, value);
-    }
-
-    public bool CanRedo
-    {
-        get => canRedo;
-        private set => Set(ref canRedo, value);
-    }
-
     public RelayCommand UndoCommand { get; }
 
     public RelayCommand RedoCommand { get; }
 
     private void Undo()
     {
-        throw new NotImplementedException();
+        appCommandManager.Undo();
     }
 
     private void Redo()
     {
-        throw new NotImplementedException();
+        appCommandManager.Redo();
     }
 
     public void Dispose()
@@ -91,13 +77,13 @@ public class URViewModel : ViewModel
         appCommandManager
             .CanUndo
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => CanUndo = x)
+            .Subscribe(x => UndoCommand.IsEnabled = x)
             .DisposeWith(disposable);
 
         appCommandManager
             .CanRedo
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => CanRedo = x)
+            .Subscribe(x => RedoCommand.IsEnabled = x)
             .DisposeWith(disposable);
     }
 }

@@ -51,11 +51,17 @@
 
                     <AppBarSeparator/>
 
-                    <Button>
+                    <Button 
+                        Command="{x:Bind URViewModel.UndoCommand}"
+                        IsEnabled="{x:Bind URViewModel.UndoCommand.IsEnabled, Mode=OneWay}">
+                        
                         <FontIcon Glyph="&#xE7A7;" />
                     </Button>
 
-                    <Button>
+                    <Button
+                        Command="{x:Bind URViewModel.RedoCommand}"
+                        IsEnabled="{x:Bind URViewModel.RedoCommand.IsEnabled, Mode=OneWay}">
+                        
                         <FontIcon Glyph="&#xE7A6;" />
                     </Button>
 
@@ -114,6 +120,10 @@
                                             Text="Export frame"
                                             Command="{x:Bind ExportCommand}"
                                             CommandParameter="{x:Bind}"/>
+                                        <MenuFlyoutItem 
+                                            Text="Remove frame"
+                                            Command="{x:Bind RemoveCommand}"
+                                            CommandParameter="{x:Bind Mode=OneWay}"/>
                                     </MenuFlyout>
                                 </Grid.ContextFlyout>
 

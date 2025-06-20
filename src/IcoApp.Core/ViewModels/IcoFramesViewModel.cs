@@ -56,8 +56,8 @@ public class IcoFramesViewModel : ViewModel, IDisposable
         Items = new ReadOnlyObservableCollection<IcoFrameViewModel>(baseItems);
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
-        RemoveFrameCommand = new RelayCommand(x => RemoveFrame(x as IcoFrame));
-        ExportFrameCommand = new RelayCommand(x => ExportFrame(x as IcoFrame));
+        RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as IcoFrameViewModel)?.Frame));
+        ExportFrameCommand = new RelayCommand(x => ExportFrame((x as IcoFrameViewModel)?.Frame));
 
         InitSubscriptions();
     }
@@ -81,20 +81,24 @@ public class IcoFramesViewModel : ViewModel, IDisposable
     private async void AddFrame()
     {
         var fileNames = await fileService.PickMultipleFilesAsync();
-        if (fileNames.Count == 0)
+        if (fileNames.Count > 0)
         {
-            return;
+            await appCommandManager.ExecuteAsync(new IcoFrameAddCommand.Parameters
+            {
+                FileNames = fileNames.ToImmutableArray()
+            });
         }
-
-        await appCommandManager.ExecuteAsync(new AddIcoFrameCommand.Parameters
-        {
-            FileNames = fileNames.ToImmutableArray()
-        });
     }
 
-    private void RemoveFrame(IcoFrame? frame)
+    private async void RemoveFrame(IcoFrame? frame)
     {
-        throw new NotImplementedException();
+        if (frame is not null)
+        {
+            await appCommandManager.ExecuteAsync(new IcoFrameRemoveCommand.Parameters
+            {
+                Frames = ImmutableArray.Create([frame])
+            });
+        }
     }
 
     private void ExportFrame(IcoFrame? frame)

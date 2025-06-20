@@ -40,35 +40,41 @@ public abstract class UndoableAppCommand<T> : IAppCommand<T>, IUndoable
         CanUndo = IsExecuted;
     }
 
-    void IUndoable.Redo()
+    async Task IUndoable.Undo()
     {
         if (IsExecuted is false)
         {
             throw new InvalidOperationException("The command is not executed.");
         }
 
-        Undo();
+        if (CanUndo)
+        {
+            await Undo();
 
-        CanUndo = false;
-        CanRedo = true;
+            CanUndo = false;
+            CanRedo = true;
+        }
     }
 
-    void IUndoable.Undo()
+    async Task IUndoable.Redo()
     {
         if (IsExecuted is false)
         {
             throw new InvalidOperationException("The command is not executed.");
         }
 
-        Undo();
+        if (CanRedo)
+        {
+            await Redo();
 
-        CanUndo = true;
-        CanRedo = false;
+            CanUndo = true;
+            CanRedo = false;
+        }
     }
 
     protected abstract Task<bool> ExecuteAsync(T parameters);
 
-    protected abstract void Undo();
+    protected abstract Task Undo();
 
-    protected abstract void Redo();
+    protected abstract Task Redo();
 }

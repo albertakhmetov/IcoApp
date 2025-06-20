@@ -36,12 +36,9 @@ public static class Extensions
 
     public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
     {
-        ArgumentNullException.ThrowIfNull(enumerable);
-        ArgumentNullException.ThrowIfNull(action);
-
-        foreach (var i in enumerable)
+        foreach (var i in enumerable ?? [])
         {
-            action(i);
+            action?.Invoke(i);
         }
     }
 

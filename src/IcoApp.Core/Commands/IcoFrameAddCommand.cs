@@ -8,20 +8,29 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 
-public class AddIcoFrameCommand : UndoableAppCommand<AddIcoFrameCommand.Parameters>
+public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Parameters>, IDisposable
 {
     private readonly IIcoService icoService;
 
     private IImmutableList<IcoFrame>? frames;
 
-    public AddIcoFrameCommand(IIcoService icoService)
+    public IcoFrameAddCommand(IIcoService icoService)
     {
         ArgumentNullException.ThrowIfNull(icoService);
 
         this.icoService = icoService;
+    }
+
+    void IDisposable.Dispose()
+    {
+        if (CanRedo)
+        {
+            frames?.ForEach(x => x.Dispose());
+        }
     }
 
     protected override async Task<bool> ExecuteAsync(Parameters parameters)
@@ -76,14 +85,16 @@ public class AddIcoFrameCommand : UndoableAppCommand<AddIcoFrameCommand.Paramete
         }
     }
 
-    protected override void Redo()
+    protected override Task Undo()
     {
-        throw new NotImplementedException();
+        frames?.ForEach(x => icoService.Frames.Remove(x));
+
+        return Task.CompletedTask;
     }
 
-    protected override void Undo()
+    protected override async Task Redo()
     {
-        throw new NotImplementedException();
+        await icoService.Frames.AddAsync(frames ?? []);
     }
 
     public sealed class Parameters

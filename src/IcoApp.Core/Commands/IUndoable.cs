@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 public interface IUndoable
 {
-    void Undo();
+    Task Undo();
 
-    void Redo();
+    Task Redo();
 }

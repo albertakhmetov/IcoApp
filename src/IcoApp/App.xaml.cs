@@ -94,7 +94,9 @@ public partial class App : Application, IApp
 
         builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
         builder.Services
-            .AddTransient<IAppCommand<AddIcoFrameCommand.Parameters>, AddIcoFrameCommand>();
+            .AddTransient<IAppCommand<IcoFrameAddCommand.Parameters>, IcoFrameAddCommand>();
+        builder.Services
+            .AddTransient<IAppCommand<IcoFrameRemoveCommand.Parameters>, IcoFrameRemoveCommand>();
 
         builder.Services.AddSingleton<IcoViewModel>();
         builder.Services.AddSingleton<IcoFramesViewModel>();
