@@ -16,42 +16,53 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Helpers;
+namespace IcoApp.Core.Models;
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 
-public static class Extensions
+public class ImageData : IDisposable
 {
-    public static T DisposeWith<T>(this T obj, CompositeDisposable compositeDisposable) where T : IDisposable
+    public readonly static ImageData Empty = new(null);
+
+    private readonly byte[] buffer;
+
+    public ImageData(Stream? sourceStream)
     {
-        compositeDisposable.Add(obj);
-
-        return obj;
-    }
-
-    public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
-    {
-        ArgumentNullException.ThrowIfNull(enumerable);
-        ArgumentNullException.ThrowIfNull(action);
-
-        foreach (var i in enumerable)
+        if (sourceStream == null)
         {
-            action(i);
+            Size = 0;
+            buffer = [];
+        }
+        else
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(sourceStream.Length, int.MaxValue);
+
+            Size = (int)sourceStream.Length;
+
+            buffer = ArrayPool<byte>.Shared.Rent(Size);
+            sourceStream.ReadExactly(buffer, 0, Size);
         }
     }
 
-    public static int ToInt32(this long value)
+    public bool IsEmpty => Size == 0;
+
+    public int Size { get; }
+
+    public void Dispose()
     {
-        return Convert.ToInt32(value);
+        if (!IsEmpty)
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
-    public static int ToInt32(this double value)
+    public Stream GetStream()
     {
-        return Convert.ToInt32(value);
+        return new MemoryStream(buffer, 0, Size, false, false);
     }
 }

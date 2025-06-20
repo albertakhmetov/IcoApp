@@ -16,42 +16,28 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Helpers;
+namespace IcoApp.Core.Services;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Models;
 
-public static class Extensions
+public interface IIcoFileService
 {
-    public static T DisposeWith<T>(this T obj, CompositeDisposable compositeDisposable) where T : IDisposable
-    {
-        compositeDisposable.Add(obj);
+    IObservable<bool> Modified { get; }
 
-        return obj;
-    }
+    IObservable<string?> FileName { get; }
 
-    public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
-    {
-        ArgumentNullException.ThrowIfNull(enumerable);
-        ArgumentNullException.ThrowIfNull(action);
+    ItemCollectionBase<IcoFileFrame> Frames { get; }
 
-        foreach (var i in enumerable)
-        {
-            action(i);
-        }
-    }
+    void CreateNew();
 
-    public static int ToInt32(this long value)
-    {
-        return Convert.ToInt32(value);
-    }
+    void Load(string fileName);
 
-    public static int ToInt32(this double value)
-    {
-        return Convert.ToInt32(value);
-    }
+    void Save();
+
+    void SaveAs(string fileName);
 }

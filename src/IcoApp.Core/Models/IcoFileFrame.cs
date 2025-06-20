@@ -20,29 +20,29 @@ using System.Collections.Immutable;
 
 namespace IcoApp.Core.Models;
 
-public sealed class IcoFileFrame : IComparable<IcoFileFrame>
+public sealed class IcoFileFrame : IComparable<IcoFileFrame>, IDisposable
 {
-    public IcoFileFrame(int width, int height, ImmutableArray<byte> imageData)
+    public IcoFileFrame(int width, int height, Stream? sourceStream)
     {
         Width = width;
         Height = height;
         BitCount = 32;
 
-        ImageData = imageData;
-        Kind = IcoFileFrameKind.Png;
-        Description = "PNG";
+        Data = new ImageData(sourceStream);
+        Type = IcoFileFrameType.Png;
     }
 
-    public IcoFileFrame(int width, int height, int bitCount, ImmutableArray<byte> imageData)
+    public IcoFileFrame(int width, int height, int bitCount, Stream? sourceStream)
     {
         Width = width;
         Height = height;
         BitCount = bitCount;
 
-        ImageData = imageData;
-        Kind = IcoFileFrameKind.Bitmap;
-        Description = $"{BitCount} bit";
+        Data = new ImageData(sourceStream);
+        Type = IcoFileFrameType.Bitmap;
     }
+
+    public bool IsDisposed { get; private set; } = false;
 
     public int Width { get; }
 
@@ -50,13 +50,9 @@ public sealed class IcoFileFrame : IComparable<IcoFileFrame>
 
     public int BitCount { get; }
 
-    public IcoFileFrameKind Kind { get; }
+    public IcoFileFrameType Type { get; }
 
-    public ImmutableArray<byte> ImageData { get; }
-
-    public string Text => $"{Width}x{Height}";
-
-    public string Description { get; }
+    public ImageData Data { get; }
 
     public int CompareTo(IcoFileFrame? other)
     {
@@ -67,5 +63,13 @@ public sealed class IcoFileFrame : IComparable<IcoFileFrame>
 
         var result = Width.CompareTo(other.Width);
         return result == 0 ? BitCount.CompareTo(other.BitCount) : result;
+    }
+
+    public void Dispose()
+    {
+        if (!IsDisposed)
+        {
+            Data.Dispose();
+        }
     }
 }

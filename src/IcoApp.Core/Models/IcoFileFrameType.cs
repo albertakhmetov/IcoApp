@@ -18,7 +18,7 @@
  */
 namespace IcoApp.Core.Models;
 
-public enum IcoFileFrameKind
+public enum IcoFileFrameType
 {
     Bitmap,
     Png,
