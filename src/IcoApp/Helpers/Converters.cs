@@ -37,17 +37,28 @@ static class Converters
 
     public static bool Or(bool a, bool b) => a || b;
 
-    public static ImageSource? LoadImage(ImageData mediaFileCover)
+    public static ImageSource? LoadImage(ImageData imageData)
     {
-        if (mediaFileCover == null || mediaFileCover.Size == 0)
+        return LoadImage(imageData, 48);
+    }
+
+    public static ImageSource? LoadImage(ImageData imageData, double maxSize)
+    {
+        if (imageData == null || imageData.Size == 0)
         {
             return null;
         }
 
-        using var stream = mediaFileCover.GetStream().AsRandomAccessStream();
+        using var stream = imageData.GetStream().AsRandomAccessStream();
 
         var bitmapImage = new BitmapImage();
         bitmapImage.SetSource(stream);
+
+        var factor = maxSize / Math.Max(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+
+        bitmapImage.DecodePixelWidth = Convert.ToInt32(factor * bitmapImage.PixelWidth);
+        bitmapImage.DecodePixelHeight = Convert.ToInt32(factor * bitmapImage.PixelHeight);
+        bitmapImage.DecodePixelType = DecodePixelType.Logical;
 
         return bitmapImage;
     }

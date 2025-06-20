@@ -78,8 +78,12 @@
                             <Setter Property="FontSize" Value="16"/>
                         </Style>
                     </StackPanel.Resources>
-                    
-                    <Button Style="{ThemeResource AccentButtonStyle}" Margin="4">
+
+                    <Button 
+                        Style="{ThemeResource AccentButtonStyle}" 
+                        Margin="4"
+                        Command="{x:Bind IcoFramesViewModel.AddFrameCommand}">
+                        
                         <FontIcon Glyph="&#xE710;" />
                     </Button>
                     

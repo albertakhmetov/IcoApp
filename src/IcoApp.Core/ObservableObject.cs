@@ -40,11 +40,17 @@ public abstract class ObservableObject : INotifyPropertyChanged
         {
             return false;
         }
+        else if ((property is null && value is null) || object.ReferenceEquals(property, value))
+        {
+            return false;
+        }
+        else
+        {
+            property = value;
+            OnPropertyChanged(propertyName);
 
-        property = value;
-        OnPropertyChanged(propertyName);
-
-        return true;
+            return true;
+        }
     }
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

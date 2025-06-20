@@ -20,14 +20,16 @@ namespace IcoApp.Views;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using WinRT.Interop;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IAppWindow
 {
     public MainWindow(
         IcoViewModel icoViewModel, 
@@ -53,9 +55,16 @@ public partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
     }
 
+    public nint Handle => WindowNative.GetWindowHandle(this);
+
     public IcoViewModel IcoViewModel { get; }
 
     public IcoFramesViewModel IcoFramesViewModel { get; }
 
     public URViewModel URViewModel { get; }
+
+    public void Show()
+    {
+        AppWindow.Show(true);
+    }
 }

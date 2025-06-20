@@ -20,12 +20,14 @@ namespace IcoApp.Core.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Commands;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
@@ -35,14 +37,20 @@ public class IcoFramesViewModel : ViewModel, IDisposable
     private readonly CompositeDisposable disposable = [];
 
     private readonly IIcoService icoService;
+    private readonly IFileService fileService;
+    private readonly IAppCommandManager appCommandManager;
     private ItemObservableCollection<IcoFrameViewModel> baseItems;
-    private IcoFrame? currentItem;
+    private IcoFrameViewModel? currentItem;
 
-    public IcoFramesViewModel(IIcoService icoService)
+    public IcoFramesViewModel(IIcoService icoService, IFileService fileService, IAppCommandManager appCommandManager)
     {
         ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(fileService);
+        ArgumentNullException.ThrowIfNull(appCommandManager);
 
         this.icoService = icoService;
+        this.fileService = fileService;
+        this.appCommandManager = appCommandManager;
 
         baseItems = [];
         Items = new ReadOnlyObservableCollection<IcoFrameViewModel>(baseItems);
@@ -58,7 +66,7 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
     public bool IsEmpty => Items.Count == 0;
 
-    public IcoFrame? CurrentItem
+    public IcoFrameViewModel? CurrentItem
     {
         get => currentItem;
         set => Set(ref currentItem, value);
@@ -70,9 +78,18 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
     public RelayCommand ExportFrameCommand { get; }
 
-    private void AddFrame()
+    private async void AddFrame()
     {
-        throw new NotImplementedException();
+        var fileNames = await fileService.PickMultipleFilesAsync();
+        if (fileNames.Count == 0)
+        {
+            return;
+        }
+
+        await appCommandManager.ExecuteAsync(new AddIcoFrameCommand.Parameters
+        {
+            FileNames = fileNames.ToImmutableArray()
+        });
     }
 
     private void RemoveFrame(IcoFrame? frame)

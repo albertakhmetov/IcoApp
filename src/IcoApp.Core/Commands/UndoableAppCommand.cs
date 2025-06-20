@@ -36,10 +36,8 @@ public abstract class UndoableAppCommand<T> : IAppCommand<T>, IUndoable
     {
         ArgumentNullException.ThrowIfNull(parameters);
 
-        await ExecuteAsync(parameters);
-
-        IsExecuted = true;
-        CanUndo = true;
+        IsExecuted = await ExecuteAsync(parameters);
+        CanUndo = IsExecuted;
     }
 
     void IUndoable.Redo()
@@ -68,7 +66,7 @@ public abstract class UndoableAppCommand<T> : IAppCommand<T>, IUndoable
         CanRedo = false;
     }
 
-    protected abstract Task ExecuteAsync(T parameters);
+    protected abstract Task<bool> ExecuteAsync(T parameters);
 
     protected abstract void Undo();
 

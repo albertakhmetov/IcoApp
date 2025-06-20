@@ -30,18 +30,7 @@ public class ItemCollection<T> : ItemCollectionBase<T> where T : class
     private readonly List<T> baseList = new List<T>();
     private IImmutableList<T>? list;
 
-    public override IImmutableList<T> List
-    {
-        get
-        {
-            if (list == null)
-            {
-                list = baseList.ToImmutableArray();
-            }
-
-            return list;
-        }
-    }
+    public override IImmutableList<T> List => list ??= baseList.ToImmutableArray();
 
     public override int Count => throw new NotImplementedException();
 

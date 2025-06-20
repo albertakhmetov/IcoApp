@@ -36,7 +36,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using WinRT.Interop;
 
-public partial class App : Application
+public partial class App : Application, IApp
 {
     [STAThread]
     public static void Main(string[] args)
@@ -59,7 +59,7 @@ public partial class App : Application
 
     private readonly ImmutableArray<string> arguments;
     private IHost? host;
-    private MainWindow? mainWindow;
+    private IAppWindow? mainWindow;
 
     public App(string[] args)
     {
@@ -68,32 +68,33 @@ public partial class App : Application
         InitializeComponent();
     }
 
+    public nint Handle => mainWindow?.Handle ?? nint.Zero;
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
 
         host = CreateHost();
 
-        mainWindow = host.Services.GetRequiredService<MainWindow>();
-        mainWindow.Closed += OnMainWindowClosed;
-        mainWindow.AppWindow.Show(true);
+        mainWindow = host.Services.GetRequiredService<IAppWindow>();
+        mainWindow.Show();
 
         _ = host.RunAsync();
-    }
-
-    private void OnMainWindowClosed(object sender, WindowEventArgs args)
-    {
-        Exit();
     }
 
     private IHost CreateHost()
     {
         var builder = Host.CreateApplicationBuilder();
 
-        builder.Services.AddSingleton<MainWindow>();
-        builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
+        builder.Services.AddSingleton<IAppWindow, MainWindow>();
+        builder.Services.AddSingleton<IApp>(this);
 
+        builder.Services.AddSingleton<IFileService, FileService>();
         builder.Services.AddSingleton<IIcoService, IcoService>();
+
+        builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
+        builder.Services
+            .AddTransient<IAppCommand<AddIcoFrameCommand.Parameters>, AddIcoFrameCommand>();
 
         builder.Services.AddSingleton<IcoViewModel>();
         builder.Services.AddSingleton<IcoFramesViewModel>();
