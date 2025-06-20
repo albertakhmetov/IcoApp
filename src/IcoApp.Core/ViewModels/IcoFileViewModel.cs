@@ -21,13 +21,21 @@ namespace IcoApp.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Helpers;
 using IcoApp.Core.Services;
 
-public class IcoFileViewModel : ViewModel
+public class IcoFileViewModel : ViewModel, IDisposable
 {
+    private readonly CompositeDisposable disposable = [];
+
     private readonly IIcoFileService icoFileService;
+
+    private string? fileName;
+    private bool isModified;
 
     public IcoFileViewModel(IIcoFileService icoFileService)
     {
@@ -35,14 +43,29 @@ public class IcoFileViewModel : ViewModel
 
         this.icoFileService = icoFileService;
 
+        fileName = null;
+        isModified = false;
+
         NewFileCommand = new RelayCommand(_ => NewFile());
         OpenFileCommand = new RelayCommand(_ => OpenFile());
         SaveFileCommand = new RelayCommand(_ => SaveFile());
+
+        InitSubscriptions();
     }
 
-    public string FileName { get; }
+    public string Name => (string.IsNullOrEmpty(FileName) ? "Noname" : FileName) + (IsModified ? "*" : "");
 
-    public bool IsModified { get; }
+    public string? FileName
+    {
+        get => fileName;
+        private set => Set(ref fileName, value);
+    }
+
+    public bool IsModified
+    {
+        get => isModified;
+        private set => Set(ref isModified, value);
+    }
 
     public RelayCommand NewFileCommand { get; }
 
@@ -63,5 +86,41 @@ public class IcoFileViewModel : ViewModel
     private void SaveFile()
     {
         throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        if (!disposable.IsDisposed)
+        {
+            disposable.Dispose();
+        }
+    }
+
+    private void InitSubscriptions()
+    {
+        if (SynchronizationContext.Current == null)
+        {
+            throw new InvalidOperationException("SynchronizationContext.Current can't be null");
+        }
+
+        icoFileService
+            .Modified
+            .CombineLatest(icoFileService.FileName)
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(_ => Invalidate(nameof(Name)))
+            .DisposeWith(disposable);
+
+        icoFileService
+            .Modified
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => IsModified = x)
+            .DisposeWith(disposable);
+
+        icoFileService
+            .FileName
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => FileName = x)
+            .DisposeWith(disposable);
     }
 }

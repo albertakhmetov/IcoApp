@@ -21,13 +21,19 @@ namespace IcoApp.Core.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Commands;
+using IcoApp.Core.Helpers;
 
-internal class URViewModel
+public class URViewModel : ViewModel
 {
+    private readonly CompositeDisposable disposable = [];
     private readonly IAppCommandManager appCommandManager;
+
+    private bool canUndo, canRedo;
 
     public URViewModel(IAppCommandManager appCommandManager)
     {
@@ -37,11 +43,21 @@ internal class URViewModel
 
         UndoCommand = new RelayCommand(_ => Undo());
         RedoCommand = new RelayCommand(_ => Redo());
+
+        InitSubscriptions();
     }
 
-    public bool CanUndo { get; }
+    public bool CanUndo
+    {
+        get => canUndo;
+        private set => Set(ref canUndo, value);
+    }
 
-    public bool CanRedo { get; }
+    public bool CanRedo
+    {
+        get => canRedo;
+        private set => Set(ref canRedo, value);
+    }
 
     public RelayCommand UndoCommand { get; }
 
@@ -55,5 +71,33 @@ internal class URViewModel
     private void Redo()
     {
         throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        if (!disposable.IsDisposed)
+        {
+            disposable.Dispose();
+        }
+    }
+
+    private void InitSubscriptions()
+    {
+        if (SynchronizationContext.Current == null)
+        {
+            throw new InvalidOperationException("SynchronizationContext.Current can't be null");
+        }
+
+        appCommandManager
+            .CanUndo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => CanUndo = x)
+            .DisposeWith(disposable);
+
+        appCommandManager
+            .CanRedo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(x => CanRedo = x)
+            .DisposeWith(disposable);
     }
 }

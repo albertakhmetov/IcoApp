@@ -20,6 +20,7 @@ namespace IcoApp.Views;
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using IcoApp.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -44,4 +45,10 @@ public partial class MainWindow : Window
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetTitleBar(AppTitleBar);
     }
+
+    public URViewModel URViewModel { get; }
+
+    public IcoFileViewModel IcoFileViewModel { get; }
+
+    public IcoFileFramesViewModel IcoFileFramesViewModel { get; }
 }
