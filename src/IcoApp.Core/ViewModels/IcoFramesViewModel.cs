@@ -31,24 +31,33 @@ using IcoApp.Core.Commands;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
+using Microsoft.Extensions.Hosting;
 
 public class IcoFramesViewModel : ViewModel, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
 
     private readonly IIcoService icoService;
+    private readonly IAppService appService;
     private readonly IFileService fileService;
     private readonly IAppCommandManager appCommandManager;
+
     private ItemObservableCollection<IcoFrameViewModel> baseItems;
     private IcoFrameViewModel? currentItem;
 
-    public IcoFramesViewModel(IIcoService icoService, IFileService fileService, IAppCommandManager appCommandManager)
+    public IcoFramesViewModel(
+        IIcoService icoService,
+        IAppService appService,
+        IFileService fileService,
+        IAppCommandManager appCommandManager)
     {
         ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(appService);
         ArgumentNullException.ThrowIfNull(fileService);
         ArgumentNullException.ThrowIfNull(appCommandManager);
 
         this.icoService = icoService;
+        this.appService = appService;
         this.fileService = fileService;
         this.appCommandManager = appCommandManager;
 
@@ -83,7 +92,7 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
     private async void AddFrame()
     {
-        var fileNames = await fileService.PickMultipleFilesAsync();
+        var fileNames = await fileService.PickFilesForOpenAsync(appService.SupportedImageTypes);
         if (fileNames.Count > 0)
         {
             await appCommandManager.ExecuteAsync(new IcoFrameAddCommand.Parameters
@@ -112,9 +121,25 @@ public class IcoFramesViewModel : ViewModel, IDisposable
         });
     }
 
-    private void ExportFrame(IcoFrame? frame)
+    private async void ExportFrame(IcoFrame? frame)
     {
-        throw new NotImplementedException();
+        if (frame == null)
+        {
+            return;
+        }
+
+        var fileType = frame.Type == IcoFrameType.Bitmap ? FileType.Bmp : FileType.Png;
+
+        var fileName = await fileService.PickFileForSaveAsync([fileType], $"frame{fileType.Extension}");
+
+        if (string.IsNullOrEmpty(fileName) is false)
+        {
+            await appCommandManager.ExecuteAsync(new IcoFrameExportCommand.Parameters
+            {
+                Frame = frame,
+                FileName = fileName
+            });
+        }
     }
 
     public void Dispose()

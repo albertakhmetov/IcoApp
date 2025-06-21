@@ -25,27 +25,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Helpers;
+using IcoApp.Core.Models;
 using IcoApp.Core.Services;
+using Microsoft.UI.Xaml;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 class FileService : IFileService
 {
-    private readonly IApp app;
-    private readonly IImmutableList<string> SupportedExts = [".png", ".bmp"];
+    private readonly IAppService appService;
 
-    private string UserDataPath => "./"; // todo: replace to user/local folder
+    public FileService(IAppService appService)
+    {
+        ArgumentNullException.ThrowIfNull(appService);
+
+        this.appService = appService;
+    }
 
     public Stream? ReadUserFile(string fileName)
     {
-        var file = new FileInfo(Path.Combine(UserDataPath, fileName));
+        var file = new FileInfo(Path.Combine(appService.UserDataPath, fileName));
 
         return file.Exists ? file.OpenRead() : null;
     }
 
     public Stream WriteUserFile(string fileName, bool overwrite)
     {
-        var file = new FileInfo(Path.Combine(UserDataPath, fileName));
+        var file = new FileInfo(Path.Combine(appService.UserDataPath, fileName));
         if (overwrite && file.Exists)
         {
             file.Delete();
@@ -54,32 +61,34 @@ class FileService : IFileService
         return file.OpenWrite();
     }
 
-    public FileService(IApp app)
-    {
-        ArgumentNullException.ThrowIfNull(app);
-
-        this.app = app;
-    }
-
-    public bool IsSupported(string? fileName)
-    {
-        var ext = Path.GetExtension(fileName);
-
-        return string.IsNullOrEmpty(ext) is false
-            && SupportedExts.Any(x => x.Equals(ext, StringComparison.InvariantCultureIgnoreCase));
-    }
-
-    public async Task<IList<string>> PickMultipleFilesAsync()
+    public async Task<IList<string>> PickFilesForOpenAsync(IImmutableList<FileType> fileTypes)
     {
         var openPicker = new FileOpenPicker();
-        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, app.Handle);
+        InitializeWithWindow.Initialize(openPicker, appService.Handle);
 
         openPicker.ViewMode = PickerViewMode.Thumbnail;
         openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
 
-        SupportedExts.ForEach(x => openPicker.FileTypeFilter.Add(x));
+        fileTypes.ForEach(x => openPicker.FileTypeFilter.Add(x.Extension));
 
         var files = await openPicker.PickMultipleFilesAsync();
         return files?.Select(x => x.Path).ToArray() ?? [];
+    }
+
+    public async Task<string?> PickFileForSaveAsync(IImmutableList<FileType> fileTypes, string? suggestedFileName = null)
+    {
+        var savePicker = new FileSavePicker();
+        InitializeWithWindow.Initialize(savePicker, appService.Handle);
+
+        savePicker.SuggestedFileName = suggestedFileName ?? string.Empty;
+        savePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+
+        foreach (var category in fileTypes.GroupBy(x => x.Description))
+        {
+            savePicker.FileTypeChoices.Add(category.Key, category.Select(x => x.Extension).ToArray());
+        }
+
+        var file = await savePicker.PickSaveFileAsync();
+        return file?.Path;
     }
 }

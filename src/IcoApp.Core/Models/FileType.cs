@@ -16,7 +16,7 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Core.Models;
 
 using System;
 using System.Collections.Generic;
@@ -24,9 +24,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public interface IApp
+public sealed class FileType
 {
-    nint Handle { get; }
+    public readonly static FileType Png = new FileType { Description = "Portable Network Graphics", Extension = ".png" };
 
-    void Exit();
+    public readonly static FileType Bmp = new FileType { Description = "Bitmap", Extension = ".bmp" };
+
+    public readonly static FileType Ico = new FileType { Description = "Icon", Extension = ".ico" };
+
+    public required string Description { get; init; }
+
+    public required string Extension { get; init; }
 }

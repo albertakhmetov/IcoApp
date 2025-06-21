@@ -16,19 +16,25 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services; 
+namespace IcoApp.Services;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Models;
+using IcoApp.Core.Services;
 
-public interface IAppWindow
+internal class AppService : IAppService
 {
-    nint Handle { get; }
+    public IImmutableList<FileType> SupportedImageTypes { get; } = [FileType.Png, FileType.Bmp];
 
-    void Close();
+    public IImmutableList<FileType> SupportedFileTypes { get; } = [FileType.Ico];
 
-    void Show();
+    public nint Handle => (App.Current as App)?.Handle ?? nint.Zero;
+
+    public string UserDataPath { get; } = "./"; // todo: replace to user/local folder
+
 }

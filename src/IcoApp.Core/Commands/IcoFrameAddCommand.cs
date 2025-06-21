@@ -1,4 +1,22 @@
-﻿namespace IcoApp.Core.Commands;
+﻿/*  Copyright © 2025, Albert Akhmetov <akhmetov@live.com>   
+ *
+ *  This file is part of IcoApp.
+ *
+ *  IcoApp is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  IcoApp is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
+ *
+ */
+namespace IcoApp.Core.Commands;
 
 using System;
 using System.Collections.Generic;
@@ -81,8 +99,32 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
             image.Save(imageStream, ImageFormat.Png);
             imageStream.Flush();
             imageStream.Position = 0;
-            return new IcoFrame(image.Width, image.Height, imageStream);
+
+            if (image.RawFormat.Equals(ImageFormat.Bmp) && TryGetBitCount(image.PixelFormat, out var bitCount))
+            {
+                dataStream.Position = 0;
+                return new IcoFrame(image.Width, image.Height, bitCount, dataStream, imageStream);
+            }
+            else
+            {
+                return new IcoFrame(image.Width, image.Height, imageStream);
+            }
         }
+    }
+
+    private static bool TryGetBitCount(PixelFormat pixelFormat, out int bitCount)
+    {
+        bitCount = pixelFormat switch
+        {
+            PixelFormat.Format1bppIndexed => 1,
+            PixelFormat.Format4bppIndexed => 4,
+            PixelFormat.Format8bppIndexed => 8,
+            PixelFormat.Format24bppRgb => 24,
+            PixelFormat.Format32bppArgb => 32,
+            _ => 0,
+        };
+
+        return bitCount != 0;
     }
 
     protected override Task Undo()

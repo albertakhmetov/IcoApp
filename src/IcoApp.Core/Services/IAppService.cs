@@ -18,16 +18,21 @@
  */
 namespace IcoApp.Core.Services;
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using IcoApp.Core.Models;
 
-public interface IFileService
+public interface IAppService
 {
-    Stream? ReadUserFile(string fileName);
+    IImmutableList<FileType> SupportedImageTypes { get; }
 
-    Stream WriteUserFile(string fileName, bool overwrite);
+    IImmutableList<FileType> SupportedFileTypes { get; }
 
-    Task<IList<string>> PickFilesForOpenAsync(IImmutableList<FileType> fileTypes);
+    nint Handle { get; }
 
-    Task<string?> PickFileForSaveAsync(IImmutableList<FileType> fileTypes, string? suggestedFileName = null);
+    string UserDataPath { get; }
 }

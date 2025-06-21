@@ -36,7 +36,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.AppLifecycle;
 using WinRT.Interop;
 
-public partial class App : Application, IApp
+public partial class App : Application
 {
     [STAThread]
     public static void Main(string[] args)
@@ -59,7 +59,7 @@ public partial class App : Application, IApp
 
     private readonly ImmutableArray<string> arguments;
     private IHost? host;
-    private IAppWindow? mainWindow;
+    private MainWindow? mainWindow;
 
     public App(string[] args)
     {
@@ -68,7 +68,7 @@ public partial class App : Application, IApp
         InitializeComponent();
     }
 
-    public nint Handle => mainWindow?.Handle ?? nint.Zero;
+    public nint? Handle => mainWindow == null ? null : WindowNative.GetWindowHandle(mainWindow);
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
@@ -76,8 +76,8 @@ public partial class App : Application, IApp
 
         host = CreateHost();
 
-        mainWindow = host.Services.GetRequiredService<IAppWindow>();
-        mainWindow.Show();
+        mainWindow = host.Services.GetRequiredService<MainWindow>();
+        mainWindow.AppWindow.Show();
 
         _ = host.RunAsync();
     }
@@ -86,9 +86,9 @@ public partial class App : Application, IApp
     {
         var builder = Host.CreateApplicationBuilder();
 
-        builder.Services.AddSingleton<IAppWindow, MainWindow>();
-        builder.Services.AddSingleton<IApp>(this);
+        builder.Services.AddSingleton<MainWindow>();
 
+        builder.Services.AddSingleton<IAppService, AppService>();
         builder.Services.AddSingleton<IFileService, FileService>();
         builder.Services.AddSingleton<IIcoService, IcoService>();
 
@@ -97,6 +97,8 @@ public partial class App : Application, IApp
             .AddTransient<IAppCommand<IcoFrameAddCommand.Parameters>, IcoFrameAddCommand>();
         builder.Services
             .AddTransient<IAppCommand<IcoFrameRemoveCommand.Parameters>, IcoFrameRemoveCommand>();
+        builder.Services
+            .AddTransient<IAppCommand<IcoFrameExportCommand.Parameters>, IcoFrameExportCommand>();
 
         builder.Services.AddSingleton<IcoViewModel>();
         builder.Services.AddSingleton<IcoFramesViewModel>();

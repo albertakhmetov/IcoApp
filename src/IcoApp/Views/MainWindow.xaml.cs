@@ -29,7 +29,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
 
-public partial class MainWindow : Window, IAppWindow
+public partial class MainWindow : Window
 {
     public MainWindow(
         IcoViewModel icoViewModel, 
@@ -55,16 +55,9 @@ public partial class MainWindow : Window, IAppWindow
         SetTitleBar(AppTitleBar);
     }
 
-    public nint Handle => WindowNative.GetWindowHandle(this);
-
     public IcoViewModel IcoViewModel { get; }
 
     public IcoFramesViewModel IcoFramesViewModel { get; }
 
     public URViewModel URViewModel { get; }
-
-    public void Show()
-    {
-        AppWindow.Show(true);
-    }
 }
