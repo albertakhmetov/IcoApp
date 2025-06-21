@@ -169,11 +169,14 @@ public class IcoFramesViewModel : ViewModel, IDisposable
         switch (action.Type)
         {
             case ItemCollectionActionType.Reset:
-                baseItems.Set(action.Items.Select(i => new IcoFrameViewModel(i, ExportFrameCommand, RemoveFrameCommand)));
+                baseItems.Set(action.Items.Select(x => new IcoFrameViewModel(x, ExportFrameCommand, RemoveFrameCommand)));
                 break;
 
             case ItemCollectionActionType.Add:
-                baseItems.Insert(action.Items.Select(i => new IcoFrameViewModel(i, ExportFrameCommand, RemoveFrameCommand)));
+                action
+                    .Items
+                    .Select(x => new IcoFrameViewModel(x, ExportFrameCommand, RemoveFrameCommand))
+                    .ForEach(x => baseItems.Add(x));
                 break;
 
             case ItemCollectionActionType.Remove:

@@ -25,7 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 
-public class IcoFrameViewModel : ViewModel
+public class IcoFrameViewModel : ViewModel, IComparable<IcoFrameViewModel>
 {
     public IcoFrameViewModel(IcoFrame frame, RelayCommand exportCommand, RelayCommand removeCommand)
     {
@@ -50,4 +50,15 @@ public class IcoFrameViewModel : ViewModel
     public RelayCommand ExportCommand { get; }
 
     public RelayCommand RemoveCommand { get; }
+
+    public int CompareTo(IcoFrameViewModel? other)
+    {
+        if (other == null)
+        {
+            return 1;
+        }
+
+        var result = Frame.Width.CompareTo(other.Frame.Width);
+        return result == 0 ? Frame.BitCount.CompareTo(other.Frame.BitCount) : result;
+    }
 }

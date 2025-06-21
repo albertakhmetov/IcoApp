@@ -21,12 +21,12 @@ namespace IcoApp.Core.Models;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-public class ItemObservableCollection<T> : ObservableCollection<T>
+public class ItemObservableCollection<T> : ObservableCollection<T> where T : IComparable<T>
 {
     public void Set(IEnumerable<T>? items)
     {
         Items.Clear();
-        foreach (var i in items ?? [])
+        foreach (var i in (items ?? []).Where(x => x != null).OrderBy(x => x))
         {
             Items.Add(i);
         }
@@ -34,34 +34,51 @@ public class ItemObservableCollection<T> : ObservableCollection<T>
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 
-    public void Insert(IEnumerable<T>? items, int? startingIndex = 0)
+    protected override void InsertItem(int index, T item)
     {
-        if (items == null || !items.Any())
+        // ignore null values
+        if (item == null)
         {
             return;
         }
 
-        var args = new NotifyCollectionChangedEventArgs(
-            NotifyCollectionChangedAction.Add,
-            items!.ToArray(),
-            startingIndex == null ? Count : startingIndex.Value);
-
-        if (startingIndex == null)
+        var i = 0;
+        while (Items.Count > i && item.CompareTo(Items[i]) > 0)
         {
-            foreach (var i in items)
-            {
-                Items.Add(i);
-            }
-        }
-        else
-        {
-            var index = startingIndex.Value;
-            foreach (var i in items)
-            {
-                Items.Insert(index++, i);
-            }
+            i++;
         }
 
-        OnCollectionChanged(args);
+        base.InsertItem(i, item);
     }
+
+    //public void Insert(IEnumerable<T>? items, int? startingIndex = 0)
+    //{
+    //    if (items == null || !items.Any())
+    //    {
+    //        return;
+    //    }
+
+    //    var args = new NotifyCollectionChangedEventArgs(
+    //        NotifyCollectionChangedAction.Add,
+    //        items!.ToArray(),
+    //        startingIndex == null ? Count : startingIndex.Value);
+
+    //    if (startingIndex == null)
+    //    {
+    //        foreach (var i in items)
+    //        {
+    //            Items.Add(i);
+    //        }
+    //    }
+    //    else
+    //    {
+    //        var index = startingIndex.Value;
+    //        foreach (var i in items)
+    //        {
+    //            Items.Insert(index++, i);
+    //        }
+    //    }
+
+    //    OnCollectionChanged(args);
+    //}
 }
