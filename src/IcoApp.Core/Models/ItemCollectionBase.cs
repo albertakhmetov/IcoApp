@@ -95,8 +95,10 @@ public abstract class ItemCollectionBase<T> : IObservable<ItemCollectionAction<T
         }
     }
 
-    public void RemoveAll()
+    public IImmutableList<T> RemoveAll()
     {
+        var list = List.ToImmutableArray();
+
         Clear();
         OnCollectionChanged();
 
@@ -105,6 +107,8 @@ public abstract class ItemCollectionBase<T> : IObservable<ItemCollectionAction<T
             Type = ItemCollectionActionType.Reset,
             Items = []
         });
+
+        return list;
     }
 
     public abstract bool Contains(T item);

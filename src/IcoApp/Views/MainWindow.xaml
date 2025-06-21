@@ -93,7 +93,10 @@
                         <FontIcon Glyph="&#xE710;" />
                     </Button>
                     
-                    <Button Margin="4">
+                    <Button
+                        Margin="4"
+                        Command="{x:Bind IcoFramesViewModel.RemoveAllFramesCommand}">
+                        
                         <FontIcon Glyph="&#xE74D;" />
                     </Button>
                 </StackPanel>
@@ -118,10 +121,12 @@
                                     <MenuFlyout>
                                         <MenuFlyoutItem 
                                             Text="Export frame"
+                                            Icon="Download"
                                             Command="{x:Bind ExportCommand}"
                                             CommandParameter="{x:Bind}"/>
                                         <MenuFlyoutItem 
                                             Text="Remove frame"
+                                            Icon="Delete"
                                             Command="{x:Bind RemoveCommand}"
                                             CommandParameter="{x:Bind Mode=OneWay}"/>
                                     </MenuFlyout>

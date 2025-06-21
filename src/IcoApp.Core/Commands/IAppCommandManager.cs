@@ -30,8 +30,12 @@ public interface IAppCommandManager
 
     IObservable<bool> CanRedo { get; }
 
+    IObservable<int> ExecutedCount { get; }
+
     Task ExecuteAsync<T>(T parameters);
 
+    void ClearHistory();
+    
     void Undo();
 
     void Redo();

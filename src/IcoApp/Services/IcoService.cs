@@ -21,28 +21,41 @@ namespace IcoApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Commands;
+using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 
-internal class IcoService : IIcoService
+internal class IcoService : IIcoService, IDisposable
 {
+    private readonly CompositeDisposable disposable = [];
+    private readonly IAppCommandManager appCommandManager;
+
     private readonly BehaviorSubject<bool> modifiedSubject;
     private readonly BehaviorSubject<string?> fileNameSubject;
 
-    public IcoService()
+    private int savedExecutedCount = 0;
+
+    public IcoService(IAppCommandManager appCommandManager)
     {
+        ArgumentNullException.ThrowIfNull(appCommandManager);
+
+        this.appCommandManager = appCommandManager;
+
         modifiedSubject = new BehaviorSubject<bool>(false);
         fileNameSubject = new BehaviorSubject<string?>(null);
 
         Frames = new ItemCollection<IcoFrame>();
-        Frames.CollectionChanged += Frames_CollectionChanged;
 
-        Modified = modifiedSubject.Throttle(TimeSpan.FromMilliseconds(200)).AsObservable();
-        FileName = fileNameSubject.Throttle(TimeSpan.FromMilliseconds(200)).AsObservable();
+        Modified = modifiedSubject.DistinctUntilChanged().Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
+        FileName = fileNameSubject.Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
+
+        InitSubscriptions();
     }
 
     public IObservable<bool> Modified { get; }
@@ -79,8 +92,19 @@ internal class IcoService : IIcoService
         throw new NotImplementedException();
     }
 
-    private void Frames_CollectionChanged(object? sender, EventArgs e)
+    public void Dispose()
     {
-        modifiedSubject.OnNext(true);
+        if (!disposable.IsDisposed)
+        {
+            disposable.Dispose();
+        }
+    }
+
+    private void InitSubscriptions()
+    {
+        appCommandManager
+            .ExecutedCount
+            .Subscribe(x => modifiedSubject.OnNext(x != savedExecutedCount))
+            .DisposeWith(disposable);
     }
 }

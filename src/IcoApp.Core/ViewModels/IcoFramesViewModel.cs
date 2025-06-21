@@ -57,6 +57,7 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
         RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as IcoFrameViewModel)?.Frame));
+        RemoveAllFramesCommand = new RelayCommand(x => RemoveAllFrames());
         ExportFrameCommand = new RelayCommand(x => ExportFrame((x as IcoFrameViewModel)?.Frame));
 
         InitSubscriptions();
@@ -75,6 +76,8 @@ public class IcoFramesViewModel : ViewModel, IDisposable
     public RelayCommand AddFrameCommand { get; }
 
     public RelayCommand RemoveFrameCommand { get; }
+
+    public RelayCommand RemoveAllFramesCommand { get; }
 
     public RelayCommand ExportFrameCommand { get; }
 
@@ -99,6 +102,14 @@ public class IcoFramesViewModel : ViewModel, IDisposable
                 Frames = ImmutableArray.Create([frame])
             });
         }
+    }
+
+    private async void RemoveAllFrames()
+    {
+        await appCommandManager.ExecuteAsync(new IcoFrameRemoveCommand.Parameters
+        {
+            RemoveAll = true
+        });
     }
 
     private void ExportFrame(IcoFrame? frame)

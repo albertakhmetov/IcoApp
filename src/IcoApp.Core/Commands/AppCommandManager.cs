@@ -33,6 +33,7 @@ public class AppCommandManager : IAppCommandManager
 {
     private readonly IServiceProvider serviceProvider;
     private readonly History undoHistory = [], redoHistory = [];
+    private readonly BehaviorSubject<int> executedCountSubject;
 
     public AppCommandManager(IServiceProvider serviceProvider)
     {
@@ -40,13 +41,18 @@ public class AppCommandManager : IAppCommandManager
 
         this.serviceProvider = serviceProvider;
 
+        executedCountSubject = new BehaviorSubject<int>(0);
+
         CanUndo = undoHistory.Select((bool x) => !x).AsObservable();
         CanRedo = redoHistory.Select((bool x) => !x).AsObservable();
+        ExecutedCount = executedCountSubject.AsObservable();
     }
 
     public IObservable<bool> CanUndo { get; }
 
     public IObservable<bool> CanRedo { get; }
+
+    public IObservable<int> ExecutedCount { get; }
 
     public async Task ExecuteAsync<T>(T parameters)
     {
@@ -57,9 +63,19 @@ public class AppCommandManager : IAppCommandManager
         if (command is IUndoable undoableCommand)
         {
             undoHistory.Push(undoableCommand);
+
+            IncreaseExecutedCount();
         }
 
         redoHistory.Clear();
+    }
+
+    public void ClearHistory()
+    {
+        undoHistory.Clear();
+        redoHistory.Clear();
+
+        executedCountSubject.OnNext(0);
     }
 
     public void Undo()
@@ -67,8 +83,9 @@ public class AppCommandManager : IAppCommandManager
         if (undoHistory.TryPop(out var undoableCommand))
         {
             undoableCommand.Undo();
-
             redoHistory.Push(undoableCommand);
+
+            DecreaseExecutedCount();
         }
     }
 
@@ -79,7 +96,22 @@ public class AppCommandManager : IAppCommandManager
             undoableCommand.Redo();
 
             undoHistory.Push(undoableCommand);
+            IncreaseExecutedCount();
         }
+    }
+
+    private void IncreaseExecutedCount()
+    {
+        var count = executedCountSubject.Value;
+
+        executedCountSubject.OnNext(count + 1);
+    }
+
+    private void DecreaseExecutedCount()
+    {
+        var count = executedCountSubject.Value;
+
+        executedCountSubject.OnNext(count - 1);
     }
 
     private sealed class History : IEnumerable<IUndoable>, IObservable<bool>
