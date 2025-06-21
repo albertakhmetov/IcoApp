@@ -28,6 +28,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
+using IcoApp.Core.ViewModels;
 
 static class Converters
 {
@@ -36,6 +37,11 @@ static class Converters
     public static bool And(bool a, bool b) => a && b;
 
     public static bool Or(bool a, bool b) => a || b;
+
+    public static ImageData? GetIcoFrameImage(IcoFrameViewModel? viewModel)
+    {
+        return viewModel?.Frame?.Image;
+    }
 
     public static ImageSource? LoadImage(ImageData imageData)
     {

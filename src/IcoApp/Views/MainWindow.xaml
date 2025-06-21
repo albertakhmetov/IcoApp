@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:IcoApp.Views"
+    xmlns:c="using:IcoApp.Controls"
     xmlns:h="using:IcoApp.Helpers"
     xmlns:vm="using:IcoApp.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -160,5 +161,10 @@
             </StackPanel>
             
         </Border>
+
+        <c:ImageViewer 
+            Grid.Row="1" 
+            Grid.Column="1" 
+            ImageData="{x:Bind h:Converters.GetIcoFrameImage(IcoFramesViewModel.CurrentItem), Mode=OneWay, FallbackValue={x:Null}}"/>
     </Grid>
 </Window>
