@@ -26,15 +26,15 @@ using System.Threading.Tasks;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 
-public class IcoFrameExportCommand : IAppCommand<IcoFrameExportCommand.Parameters>
+public class ImageDataExportCommand : IAppCommand<ImageDataExportCommand.Parameters>
 {
     public Task ExecuteAsync(Parameters parameters)
     {
         ArgumentNullException.ThrowIfNull(parameters);
-        ArgumentNullException.ThrowIfNull(parameters.Frame);
+        ArgumentNullException.ThrowIfNull(parameters.Image);
         ArgumentException.ThrowIfNullOrEmpty(parameters.FileName);
 
-        using var dataStream = parameters.Frame.Data.GetStream();
+        using var dataStream = parameters.Image.GetStream();
         using var outputStream = File.Create(parameters.FileName);
 
         dataStream.CopyTo(outputStream);
@@ -44,7 +44,7 @@ public class IcoFrameExportCommand : IAppCommand<IcoFrameExportCommand.Parameter
 
     public sealed class Parameters
     {
-        public required IcoFrame Frame { get; init; }
+        public required ImageData Image { get; init; }
 
         public required string FileName { get; init; }
     }

@@ -98,7 +98,7 @@ public partial class App : Application
         builder.Services
             .AddTransient<IAppCommand<IcoFrameRemoveCommand.Parameters>, IcoFrameRemoveCommand>();
         builder.Services
-            .AddTransient<IAppCommand<IcoFrameExportCommand.Parameters>, IcoFrameExportCommand>();
+            .AddTransient<IAppCommand<ImageDataExportCommand.Parameters>, ImageDataExportCommand>();
 
         builder.Services.AddSingleton<IcoViewModel>();
         builder.Services.AddSingleton<IcoFramesViewModel>();

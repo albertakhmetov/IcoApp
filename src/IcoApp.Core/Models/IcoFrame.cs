@@ -28,19 +28,17 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
         Height = height;
         BitCount = 32;
 
-        Data = new ImageData(sourceStream);
-        Image = Data;
+        Image = new ImageData(sourceStream);
         Type = IcoFrameType.Png;
     }
 
-    public IcoFrame(int width, int height, int bitCount, Stream? sourceStream, Stream? imageStream)
+    public IcoFrame(int width, int height, int bitCount, Stream? sourceStream)
     {
         Width = width;
         Height = height;
         BitCount = bitCount;
 
-        Data = new ImageData(sourceStream);
-        Image = new ImageData(imageStream);
+        Image = new ImageData(sourceStream);
         Type = IcoFrameType.Bitmap;
     }
 
@@ -54,9 +52,11 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
 
     public IcoFrameType Type { get; }
 
-    public ImageData Data { get; }
-
     public ImageData Image { get; }
+
+    public ImageData? OriginalImage { get; init; }
+
+    public ImageData? MaskImage { get; init; }
 
     public int CompareTo(IcoFrame? other)
     {
@@ -73,8 +73,10 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
     {
         if (!IsDisposed)
         {
-            Data.Dispose();
             Image.Dispose();
+
+            OriginalImage?.Dispose();
+            MaskImage?.Dispose();
         }
     }
 }

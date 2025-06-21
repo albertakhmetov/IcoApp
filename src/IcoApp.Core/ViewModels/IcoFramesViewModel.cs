@@ -134,9 +134,9 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
         if (string.IsNullOrEmpty(fileName) is false)
         {
-            await appCommandManager.ExecuteAsync(new IcoFrameExportCommand.Parameters
+            await appCommandManager.ExecuteAsync(new ImageDataExportCommand.Parameters
             {
-                Frame = frame,
+                Image = frame.Image,
                 FileName = fileName
             });
         }
