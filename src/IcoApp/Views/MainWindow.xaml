@@ -34,13 +34,15 @@
                         </Style>
                     </StackPanel.Resources>
 
-                    <Button>
+                    <Button Command="{x:Bind IcoViewModel.NewFileCommand}">
                         <FontIcon Glyph="&#xE7C3;" />
                     </Button>
-                    <Button>
+                    
+                    <Button Command="{x:Bind IcoViewModel.OpenFileCommand}">
                         <FontIcon Glyph="&#xE838;" />
                     </Button>
-                    <Button>
+                    
+                    <Button Command="{x:Bind IcoViewModel.SaveFileCommand}">
                         <FontIcon Glyph="&#xE74E;" />
                     </Button>
 
@@ -78,7 +80,12 @@
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
             BorderThickness="1" CornerRadius="4">
 
-            <StackPanel>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="8">
                     <StackPanel.Resources>
                         <Style TargetType="FontIcon">
@@ -158,7 +165,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-            </StackPanel>
+            </Grid>
             
         </Border>
 

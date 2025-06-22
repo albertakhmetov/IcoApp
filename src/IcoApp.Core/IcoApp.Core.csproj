@@ -15,4 +15,8 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\IcoApp.FileFormat\IcoApp.FileFormat.csproj" />
+	</ItemGroup>
+
 </Project>

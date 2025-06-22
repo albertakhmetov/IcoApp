@@ -33,11 +33,11 @@ public interface IIcoService
 
     ItemCollectionBase<IcoFrame> Frames { get; }
 
-    void CreateNew();
+    Task CreateNew();
 
-    void Load(string fileName);
+    Task Load(string fileName);
 
-    void Save();
+    Task Save();
 
-    void SaveAs(string fileName);
+    Task SaveAs(string fileName);
 }

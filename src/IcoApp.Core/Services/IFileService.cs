@@ -29,5 +29,7 @@ public interface IFileService
 
     Task<IList<string>> PickFilesForOpenAsync(IImmutableList<FileType> fileTypes);
 
+    Task<string?> PickFileForOpenAsync(IImmutableList<FileType> fileTypes);
+
     Task<string?> PickFileForSaveAsync(IImmutableList<FileType> fileTypes, string? suggestedFileName = null);
 }

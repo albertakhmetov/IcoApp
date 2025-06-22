@@ -75,6 +75,20 @@ class FileService : IFileService
         return files?.Select(x => x.Path).ToArray() ?? [];
     }
 
+    public async Task<string?> PickFileForOpenAsync(IImmutableList<FileType> fileTypes)
+    {
+        var openPicker = new FileOpenPicker();
+        InitializeWithWindow.Initialize(openPicker, appService.Handle);
+
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+
+        fileTypes.ForEach(x => openPicker.FileTypeFilter.Add(x.Extension));
+
+        var file = await openPicker.PickSingleFileAsync();
+        return file?.Path;
+    }
+
     public async Task<string?> PickFileForSaveAsync(IImmutableList<FileType> fileTypes, string? suggestedFileName = null)
     {
         var savePicker = new FileSavePicker();

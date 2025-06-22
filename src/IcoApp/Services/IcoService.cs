@@ -64,7 +64,7 @@ internal class IcoService : IIcoService, IDisposable
 
     public ItemCollectionBase<IcoFrame> Frames { get; }
 
-    public void CreateNew()
+    public Task CreateNew()
     {
         foreach (var i in Frames.List)
         {
@@ -75,21 +75,89 @@ internal class IcoService : IIcoService, IDisposable
 
         fileNameSubject.OnNext(null);
         modifiedSubject.OnNext(false);
+
+        return Task.CompletedTask;
     }
 
-    public void Load(string fileName)
+    public async Task Load(string fileName)
     {
-        throw new NotImplementedException();
+        using var stream = File.OpenRead(fileName);
+
+        var framesFromStream = new FileFormat.IcoFile().Load(stream);
+
+        var newFrames = framesFromStream.Select(x => CreateFrame(x)).ToArray();
+
+        await Frames.SetAsync(newFrames);
+
+        foreach (var x in framesFromStream)
+        {
+            x.Dispose();
+        }
     }
 
-    public void Save()
+    private IcoFrame CreateFrame(FileFormat.IcoFrame frame)
     {
-        throw new NotImplementedException();
+        using var imageStream = new MemoryStream(frame.ImageData.ToArray());
+
+        if (frame is FileFormat.IcoBitmapFrame bitmap)
+        { 
+            using var originalImageStream = new MemoryStream(bitmap.OriginalImageData.ToArray());
+            using var maskStream = new MemoryStream(bitmap.ImageData.ToArray());
+
+            return new IcoFrame(frame.Width, frame.Height, bitmap.BitCount, originalImageStream, imageStream)
+            {
+                MaskImage = new ImageData(maskStream)
+            };
+        }
+        else
+        {
+            return new IcoFrame(frame.Width, frame.Height, imageStream);
+        }
     }
 
-    public void SaveAs(string fileName)
+    public Task Save()
     {
-        throw new NotImplementedException();
+        var fileName = fileNameSubject.Value;
+
+        if (string.IsNullOrEmpty(fileName))
+        {
+            throw new InvalidOperationException("Can't save a file without a name.");
+        }
+
+        var framesToStream = Frames.List.Select(x => CreateFrame(x)).ToArray();
+
+        using var stream = File.OpenWrite(fileName);
+        new FileFormat.IcoFile().Save(stream, framesToStream);
+
+        foreach (var x in framesToStream)
+        {
+            x.Dispose();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private FileFormat.IcoFrame CreateFrame(IcoFrame frame)
+    {
+        if (frame.Type == IcoFrameType.Bitmap)
+        {
+            using var imageStream = frame.OriginalImage.GetStream();
+            using var maskStream = frame.MaskImage?.GetStream();
+
+            return FileFormat.IcoBitmapFrame.CreateFromImages(imageStream, maskStream);
+        }
+        else
+        {
+            return FileFormat.IcoPngFrame.CreateFromImage(frame.OriginalImage.GetStream());
+        }
+    }
+
+    public async Task SaveAs(string fileName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(fileName);
+
+        fileNameSubject.OnNext(fileName);
+        await Save();
     }
 
     public void Dispose()

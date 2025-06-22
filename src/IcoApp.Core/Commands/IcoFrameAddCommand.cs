@@ -103,10 +103,7 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
             if (image.RawFormat.Equals(ImageFormat.Bmp) && TryGetBitCount(image.PixelFormat, out var bitCount))
             {
                 dataStream.Position = 0;
-                return new IcoFrame(image.Width, image.Height, bitCount, imageStream)
-                {
-                    OriginalImage = new ImageData(dataStream)
-                };
+                return new IcoFrame(image.Width, image.Height, bitCount, dataStream, imageStream);
             }
             else
             {

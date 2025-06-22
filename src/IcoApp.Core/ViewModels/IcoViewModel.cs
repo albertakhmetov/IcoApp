@@ -33,15 +33,21 @@ public class IcoViewModel : ViewModel, IDisposable
     private readonly CompositeDisposable disposable = [];
 
     private readonly IIcoService icoService;
+    private readonly IFileService fileService;
+    private readonly IAppService appService;
 
     private string? fileName;
     private bool isModified;
 
-    public IcoViewModel(IIcoService icoService)
+    public IcoViewModel(IIcoService icoService, IFileService fileService, IAppService appService)
     {
         ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(fileService);
+        ArgumentNullException.ThrowIfNull(appService);
 
         this.icoService = icoService;
+        this.fileService = fileService;
+        this.appService = appService;
 
         fileName = null;
         isModified = false;
@@ -72,21 +78,6 @@ public class IcoViewModel : ViewModel, IDisposable
     public RelayCommand OpenFileCommand { get; }
 
     public RelayCommand SaveFileCommand { get; }
-
-    private void NewFile()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void OpenFile()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void SaveFile()
-    {
-        throw new NotImplementedException();
-    }
 
     public void Dispose()
     {
@@ -122,5 +113,37 @@ public class IcoViewModel : ViewModel, IDisposable
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => FileName = x)
             .DisposeWith(disposable);
+    }
+
+    private void NewFile()
+    {
+        icoService.CreateNew();
+    }
+
+    private async void OpenFile()
+    {
+        var fileName = await fileService.PickFileForOpenAsync(appService.SupportedFileTypes);
+
+        if (string.IsNullOrEmpty(fileName) is false)
+        {
+            icoService.Load(fileName);
+        }
+    }
+
+    private async void SaveFile()
+    {
+        if (string.IsNullOrEmpty(FileName) is false)
+        {
+            icoService.Save();
+        }
+        else
+        {
+            var fileName = await fileService.PickFileForSaveAsync(appService.SupportedFileTypes);
+
+            if (string.IsNullOrEmpty(fileName) is false)
+            {
+                icoService.SaveAs(fileName);
+            }
+        }
     }
 }
