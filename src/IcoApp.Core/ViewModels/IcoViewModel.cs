@@ -59,7 +59,9 @@ public class IcoViewModel : ViewModel, IDisposable
         InitSubscriptions();
     }
 
-    public string Name => (string.IsNullOrEmpty(FileName) ? "Noname" : FileName) + (IsModified ? "*" : "");
+    public string Name =>
+        (string.IsNullOrEmpty(FileName) ? "Noname" : Path.GetFileNameWithoutExtension(FileName)) +
+        (IsModified ? "*" : "");
 
     public string? FileName
     {
@@ -126,7 +128,7 @@ public class IcoViewModel : ViewModel, IDisposable
 
         if (string.IsNullOrEmpty(fileName) is false)
         {
-            icoService.Load(fileName);
+            await icoService.Load(fileName);
         }
     }
 
@@ -134,7 +136,7 @@ public class IcoViewModel : ViewModel, IDisposable
     {
         if (string.IsNullOrEmpty(FileName) is false)
         {
-            icoService.Save();
+            await icoService.Save();
         }
         else
         {
@@ -142,7 +144,7 @@ public class IcoViewModel : ViewModel, IDisposable
 
             if (string.IsNullOrEmpty(fileName) is false)
             {
-                icoService.SaveAs(fileName);
+                await icoService.SaveAs(fileName);
             }
         }
     }

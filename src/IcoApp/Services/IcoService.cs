@@ -75,6 +75,7 @@ internal class IcoService : IIcoService, IDisposable
 
         Frames.RemoveAll();
 
+        appCommandManager.ClearHistory();
         fileNameSubject.OnNext(null);
         modifiedSubject.OnNext(false);
 
@@ -90,14 +91,18 @@ internal class IcoService : IIcoService, IDisposable
         var newFrames = framesFromStream.Select(x => CreateFrame(x)).ToArray();
 
         await Frames.SetAsync(newFrames);
+
+        appCommandManager.ClearHistory();
+        fileNameSubject.OnNext(fileName);
+        modifiedSubject.OnNext(false);
     }
 
-    private IcoFrame CreateFrame(FileFormat.IIcoFileFrame frame)
+    private IcoFrame CreateFrame(IIcoFileFrame frame)
     {
         using var imageStream = new MemoryStream(frame.ImageData.ToArray());
 
         if (frame is IcoFileBitmapFrame bitmap)
-        { 
+        {
             using var originalImageStream = new MemoryStream(bitmap.OriginalImageData.ToArray());
             using var maskStream = new MemoryStream(bitmap.ImageData.ToArray());
 
@@ -112,7 +117,7 @@ internal class IcoService : IIcoService, IDisposable
         }
     }
 
-    public Task Save()
+    public async Task Save()
     {
         var fileName = fileNameSubject.Value;
 
@@ -126,7 +131,8 @@ internal class IcoService : IIcoService, IDisposable
         using var stream = File.OpenWrite(fileName);
         IcoFile.Save(stream, framesToStream);
 
-        return Task.CompletedTask;
+        savedExecutedCount = await appCommandManager.ExecutedCount.FirstAsync();
+        modifiedSubject.OnNext(false);
     }
 
     private IIcoFileFrame CreateFrame(IcoFrame frame)
