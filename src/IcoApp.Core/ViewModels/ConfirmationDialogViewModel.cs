@@ -16,26 +16,42 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Core.ViewModels;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IcoApp.Core.Models;
-using IcoApp.Core.ViewModels;
 
-public interface IAppService
+public class ConfirmationDialogViewModel : DialogViewModel
 {
-    IImmutableList<FileType> SupportedImageTypes { get; }
+    private string? iconGlyph, text;
 
-    IImmutableList<FileType> SupportedFileTypes { get; }
+    public string? IconGlyph
+    {
+        get => iconGlyph;
+        set => Set(ref iconGlyph, value);
+    }
 
-    nint Handle { get; }
+    public string? Text
+    {
+        get => text;
+        set => Set(ref text, value);
+    }
 
-    string UserDataPath { get; }
+    public string ConfirmationText
+    {
+        get => PrimaryText;
+        set
+        {
+            PrimaryText = value;
+            Invalidate(nameof(ConfirmationText));
+        }
+    }
 
-    Task<bool> Show(DialogViewModel viewModel);
+    protected override void OnPrimaryExecuted(object? parameter)
+    {
+        ;
+    }
 }

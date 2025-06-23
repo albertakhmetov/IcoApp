@@ -89,6 +89,26 @@ public class IcoViewModel : ViewModel, IDisposable
         }
     }
 
+    public async Task<bool> ConfirmChanges()
+    {
+        if (await icoService.Modified.FirstAsync() is true)
+        {
+            var isConfirmed = await appService.Show(new ConfirmationDialogViewModel
+            {
+                Text = "The icon has been modified. All unsaved changes will be discarded. Proceed?",
+                IconGlyph = "\uE9CE",
+                ConfirmationText = "Proceed"
+            });
+
+            if (isConfirmed is false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void InitSubscriptions()
     {
         if (SynchronizationContext.Current == null)
@@ -117,13 +137,23 @@ public class IcoViewModel : ViewModel, IDisposable
             .DisposeWith(disposable);
     }
 
-    private void NewFile()
+    private async void NewFile()
     {
-        icoService.CreateNew();
+        if (await ConfirmChanges() is false)
+        {
+            return;
+        }
+
+        await icoService.CreateNew();
     }
 
     private async void OpenFile()
     {
+        if (await ConfirmChanges() is false)
+        {
+            return;
+        }
+
         var fileName = await fileService.PickFileForOpenAsync(appService.SupportedFileTypes);
 
         if (string.IsNullOrEmpty(fileName) is false)

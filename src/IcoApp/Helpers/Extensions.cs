@@ -16,26 +16,27 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Helpers;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IcoApp.Core.Models;
-using IcoApp.Core.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 
-public interface IAppService
+internal static class Extensions
 {
-    IImmutableList<FileType> SupportedImageTypes { get; }
+    public static void Bind(this FrameworkElement element, DependencyProperty property, string path, BindingMode mode)
+    {
+        var binding = new Binding
+        {
+            Path = new PropertyPath(path),
+            Mode = mode
+        };
 
-    IImmutableList<FileType> SupportedFileTypes { get; }
-
-    nint Handle { get; }
-
-    string UserDataPath { get; }
-
-    Task<bool> Show(DialogViewModel viewModel);
+        element.SetBinding(property, binding);
+    }
 }

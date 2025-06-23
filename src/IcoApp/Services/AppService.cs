@@ -21,14 +21,29 @@ namespace IcoApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
+using IcoApp.Core.ViewModels;
+using IcoApp.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 
 internal class AppService : IAppService
 {
+    private readonly IServiceProvider serviceProvider;
+
+    public AppService(IServiceProvider serviceProvider)
+    {
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        this.serviceProvider = serviceProvider;
+    }
+
     public IImmutableList<FileType> SupportedImageTypes { get; } = [FileType.Png, FileType.Bmp];
 
     public IImmutableList<FileType> SupportedFileTypes { get; } = [FileType.Ico];
@@ -37,4 +52,47 @@ internal class AppService : IAppService
 
     public string UserDataPath { get; } = "./"; // todo: replace to user/local folder
 
+    public async Task<bool> Show(DialogViewModel viewModel)
+    {
+        var xamlRoot = (App.Current as App)?.XamlRoot;
+        if (xamlRoot == null)
+        {
+            throw new InvalidOperationException("The app isn't initialized.");
+        }
+
+        var dialog = new ContentDialog
+        {
+            DataContext = viewModel,
+            Content = serviceProvider.GetRequiredKeyedService<UserControl>(viewModel.GetType().Name),
+            XamlRoot = xamlRoot
+        };
+
+        dialog.DefaultButton = ContentDialogButton.Primary;
+
+        dialog.Bind(
+            ContentDialog.PrimaryButtonCommandProperty,
+            nameof(DialogViewModel.PrimaryCommand),
+            BindingMode.OneTime);
+
+        dialog.Bind(
+            ContentDialog.IsPrimaryButtonEnabledProperty,
+            nameof(DialogViewModel.IsPrimaryEnabled),
+            BindingMode.OneWay);
+
+        dialog.Bind(
+            ContentDialog.PrimaryButtonTextProperty,
+            nameof(DialogViewModel.PrimaryText),
+            BindingMode.OneWay);
+
+        dialog.Bind(
+            ContentDialog.CloseButtonTextProperty,
+            nameof(DialogViewModel.CloseText),
+            BindingMode.OneWay);
+
+        var result = await dialog.ShowAsync();
+
+        dialog.Content = null;
+
+        return result == ContentDialogResult.Primary;
+    }
 }

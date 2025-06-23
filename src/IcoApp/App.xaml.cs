@@ -70,6 +70,8 @@ public partial class App : Application
 
     public nint? Handle => mainWindow == null ? null : WindowNative.GetWindowHandle(mainWindow);
 
+    public XamlRoot? XamlRoot => mainWindow?.Content?.XamlRoot;
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
@@ -103,6 +105,8 @@ public partial class App : Application
         builder.Services.AddSingleton<IcoViewModel>();
         builder.Services.AddSingleton<IcoFramesViewModel>();
         builder.Services.AddSingleton<URViewModel>();
+
+        builder.Services.AddKeyedSingleton<UserControl, ConfirmationDialogView>(nameof(ConfirmationDialogViewModel));
 
         return builder.Build();
     }

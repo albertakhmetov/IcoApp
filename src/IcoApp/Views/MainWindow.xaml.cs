@@ -32,7 +32,7 @@ using WinRT.Interop;
 public partial class MainWindow : Window
 {
     public MainWindow(
-        IcoViewModel icoViewModel, 
+        IcoViewModel icoViewModel,
         IcoFramesViewModel icoFramesViewModel,
         URViewModel urViewModel)
     {
@@ -53,6 +53,8 @@ public partial class MainWindow : Window
         // AppWindow.SetPresenter(presenter);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetTitleBar(AppTitleBar);
+
+        AppWindow.Closing += AppWindow_Closing;
     }
 
     public IcoViewModel IcoViewModel { get; }
@@ -60,4 +62,14 @@ public partial class MainWindow : Window
     public IcoFramesViewModel IcoFramesViewModel { get; }
 
     public URViewModel URViewModel { get; }
+
+    private async void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+    {
+        args.Cancel = true;
+
+        if (await IcoViewModel.ConfirmChanges() is true)
+        {
+            App.Current.Exit();
+        }
+    }
 }

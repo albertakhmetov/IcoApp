@@ -1,4 +1,4 @@
-﻿/*  Copyright © 2025, Albert Akhmetov <akhmetov@live.com>   
+/*  Copyright � 2025, Albert Akhmetov <akhmetov@live.com>   
  *
  *  This file is part of IcoApp.
  *
@@ -16,26 +16,30 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Views;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IcoApp.Core.Models;
+using System.Runtime.InteropServices.WindowsRuntime;
 using IcoApp.Core.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 
-public interface IAppService
+public sealed partial class ConfirmationDialogView : UserControl
 {
-    IImmutableList<FileType> SupportedImageTypes { get; }
+    public ConfirmationDialogView()
+    {
+        InitializeComponent();
+    }
 
-    IImmutableList<FileType> SupportedFileTypes { get; }
-
-    nint Handle { get; }
-
-    string UserDataPath { get; }
-
-    Task<bool> Show(DialogViewModel viewModel);
+    public ConfirmationDialogViewModel? ViewModel => DataContext as ConfirmationDialogViewModel;
 }
