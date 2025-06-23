@@ -116,10 +116,10 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
     {
         bitCount = pixelFormat switch
         {
-            PixelFormat.Format1bppIndexed => 1,
-            PixelFormat.Format4bppIndexed => 4,
-            PixelFormat.Format8bppIndexed => 8,
-            PixelFormat.Format24bppRgb => 24,
+            //PixelFormat.Format1bppIndexed => 1,
+            //PixelFormat.Format4bppIndexed => 4,
+            //PixelFormat.Format8bppIndexed => 8,
+            //PixelFormat.Format24bppRgb => 24,
             PixelFormat.Format32bppArgb => 32,
             _ => 0,
         };
