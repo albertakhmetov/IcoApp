@@ -29,6 +29,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.ViewModels;
+using IcoApp.FileFormat.Internal;
 
 static class Converters
 {

@@ -30,6 +30,8 @@ using IcoApp.Core.Commands;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
+using IcoApp.FileFormat;
+using IcoApp.FileFormat.Internal;
 
 internal class IcoService : IIcoService, IDisposable
 {
@@ -83,23 +85,18 @@ internal class IcoService : IIcoService, IDisposable
     {
         using var stream = File.OpenRead(fileName);
 
-        var framesFromStream = new FileFormat.IcoFile().Load(stream);
+        var framesFromStream = IcoFile.Load(stream);
 
         var newFrames = framesFromStream.Select(x => CreateFrame(x)).ToArray();
 
         await Frames.SetAsync(newFrames);
-
-        foreach (var x in framesFromStream)
-        {
-            x.Dispose();
-        }
     }
 
-    private IcoFrame CreateFrame(FileFormat.IcoFrame frame)
+    private IcoFrame CreateFrame(FileFormat.IIcoFileFrame frame)
     {
         using var imageStream = new MemoryStream(frame.ImageData.ToArray());
 
-        if (frame is FileFormat.IcoBitmapFrame bitmap)
+        if (frame is IcoFileBitmapFrame bitmap)
         { 
             using var originalImageStream = new MemoryStream(bitmap.OriginalImageData.ToArray());
             using var maskStream = new MemoryStream(bitmap.ImageData.ToArray());
@@ -127,28 +124,23 @@ internal class IcoService : IIcoService, IDisposable
         var framesToStream = Frames.List.Select(x => CreateFrame(x)).ToArray();
 
         using var stream = File.OpenWrite(fileName);
-        new FileFormat.IcoFile().Save(stream, framesToStream);
-
-        foreach (var x in framesToStream)
-        {
-            x.Dispose();
-        }
+        IcoFile.Save(stream, framesToStream);
 
         return Task.CompletedTask;
     }
 
-    private FileFormat.IcoFrame CreateFrame(IcoFrame frame)
+    private IIcoFileFrame CreateFrame(IcoFrame frame)
     {
         if (frame.Type == IcoFrameType.Bitmap)
         {
             using var imageStream = frame.OriginalImage.GetStream();
             using var maskStream = frame.MaskImage?.GetStream();
 
-            return FileFormat.IcoBitmapFrame.CreateFromImages(imageStream, maskStream);
+            return IcoFileBitmapFrame.CreateFromImages(imageStream, maskStream);
         }
         else
         {
-            return FileFormat.IcoPngFrame.CreateFromImage(frame.OriginalImage.GetStream());
+            return IcoFilePngFrame.CreateFromImage(frame.OriginalImage.GetStream());
         }
     }
 

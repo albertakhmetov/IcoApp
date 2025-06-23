@@ -31,7 +31,7 @@ public class IcoFileTests
     [Fact]
     public void Load_StreamIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new IcoFile().Load(null));
+        Assert.Throws<ArgumentNullException>(() => IcoFile.Load(null));
     }
 
     [Fact]
@@ -39,11 +39,11 @@ public class IcoFileTests
     {
         using var stream = Core.OpenFile($"rectangular.ico");
 
-        var frames = new IcoFile().Load(stream);
+        var frames = IcoFile.Load(stream);
 
         foreach (var frame in frames)
         {
-            if (frame is IcoBitmapFrame bitmapFrame)
+            if (frame is IcoFileBitmapFrame bitmapFrame)
             {
                 Core.Compare($"rectangular/image-32.bmp", bitmapFrame.ImageData);
                 Core.Compare($"rectangular/image-{bitmapFrame.BitCount}.bmp", bitmapFrame.OriginalImageData);
@@ -59,19 +59,19 @@ public class IcoFileTests
     [Fact]
     public void Save_StreamIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new IcoFile().Save(null, new IcoFrame[0]));
+        Assert.Throws<ArgumentNullException>(() => IcoFile.Save(null, new IIcoFileFrame[0]));
     }
 
     [Fact]
     public void Save_FramesIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new IcoFile().Save(new MemoryStream(), null));
+        Assert.Throws<ArgumentNullException>(() => IcoFile.Save(new MemoryStream(), null));
     }
 
     [Fact]
     public void Save_FramesIsEmpty()
     {
-        Assert.Throws<ArgumentException>(() => new IcoFile().Save(new MemoryStream(), new IcoFrame[0]));
+        Assert.Throws<ArgumentException>(() => IcoFile.Save(new MemoryStream(), new IIcoFileFrame[0]));
     }
 
     [Theory]
@@ -84,12 +84,12 @@ public class IcoFileTests
         var frames = GetBitmapFrames(directoryName);
 
         var icoStream = new MemoryStream();
-        new IcoFile().Save(icoStream, frames);
+        IcoFile.Save(icoStream, frames);
 
         CheckIcoDir(icoStream.GetBuffer(), frames.Count);
         for (var i = 0; i < frames.Count; i++)
         {
-            CheckBitmapIcoDirEntry(icoStream.GetBuffer().AsSpan(DIR_SIZE).Slice(i * DIR_ENTRY_SIZE), frames[i] as IcoBitmapFrame);
+            CheckBitmapIcoDirEntry(icoStream.GetBuffer().AsSpan(DIR_SIZE).Slice(i * DIR_ENTRY_SIZE), frames[i] as IcoFileBitmapFrame);
         }
     }
 
@@ -103,7 +103,7 @@ public class IcoFileTests
         var frames = GetBitmapFrames(directoryName);
 
         var icoStream = new MemoryStream();
-        new IcoFile().Save(icoStream, frames);
+        IcoFile.Save(icoStream, frames);
 
         var i = 0;
         foreach (var fileName in Directory.GetFiles(Core.GetFullPath("bmp32")))
@@ -120,7 +120,7 @@ public class IcoFileTests
         var frames = GetPngFrames();
 
         var icoStream = new MemoryStream();
-        new IcoFile().Save(icoStream, frames);
+        IcoFile.Save(icoStream, frames);
 
         CheckIcoDir(icoStream.GetBuffer(), frames.Count);
         for (var i = 0; i < frames.Count; i++)
@@ -135,7 +135,7 @@ public class IcoFileTests
         var frames = GetPngFrames();
 
         var icoStream = new MemoryStream();
-        new IcoFile().Save(icoStream, frames);
+        IcoFile.Save(icoStream, frames);
 
         var i = 0;
         foreach (var file in Directory.GetFiles(Core.GetFullPath("png")))
@@ -146,29 +146,29 @@ public class IcoFileTests
         }
     }
 
-    private static List<IcoFrame> GetBitmapFrames(string directoryName)
+    private static List<IIcoFileFrame> GetBitmapFrames(string directoryName)
     {
-        var frames = new List<IcoFrame>();
+        var frames = new List<IIcoFileFrame>();
 
         foreach (var fileName in Directory.GetFiles(Core.GetFullPath(directoryName)))
         {
             using var stream = File.OpenRead(fileName);
             using var maskStream = Core.OpenFile($"mask/{Path.GetFileName(fileName)}");
 
-            frames.Add(IcoBitmapFrame.CreateFromImages(stream, maskStream));
+            frames.Add(IcoFileBitmapFrame.CreateFromImages(stream, maskStream));
         }
 
         return frames;
     }
 
-    private static List<IcoFrame> GetPngFrames()
+    private static List<IIcoFileFrame> GetPngFrames()
     {
-        var frames = new List<IcoFrame>();
+        var frames = new List<IIcoFileFrame>();
 
         foreach (var fileName in Directory.GetFiles(Core.GetFullPath("png")))
         {
             using var stream = File.OpenRead(fileName);
-            frames.Add(IcoPngFrame.CreateFromImage(stream));
+            frames.Add(IcoFilePngFrame.CreateFromImage(stream));
         }
 
         return frames;
@@ -181,7 +181,7 @@ public class IcoFileTests
         Assert.Equal(count, BitConverter.ToInt16(buffer[4..]));
     }
 
-    private void CheckBitmapIcoDirEntry(Span<byte> buffer, IcoBitmapFrame frame)
+    private void CheckBitmapIcoDirEntry(Span<byte> buffer, IcoFileBitmapFrame frame)
     {
         Assert.Equal(frame.Width == 256 ? 0 : frame.Width, buffer[0]);
         Assert.Equal(frame.Height == 256 ? 0 : frame.Height, buffer[1]);
@@ -191,7 +191,7 @@ public class IcoFileTests
         Assert.Equal(frame.BitCount, BitConverter.ToInt16(buffer[6..]));
     }
 
-    private void CheckPngIcoDirEntry(Span<byte> buffer, IcoFrame frame)
+    private void CheckPngIcoDirEntry(Span<byte> buffer, IIcoFileFrame frame)
     {
         Assert.Equal(frame.Width == 256 ? 0 : frame.Width, buffer[0]);
         Assert.Equal(frame.Height == 256 ? 0 : frame.Height, buffer[1]);

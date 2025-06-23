@@ -22,9 +22,9 @@ using System.Buffers;
 using System.Collections.Immutable;
 using IcoApp.FileFormat.Internal;
 
-public class IcoBitmapFrame : IcoFrame
+public class IcoFileBitmapFrame : IIcoFileFrame
 {
-    public static IcoBitmapFrame CreateFromImages(Stream imageStream, Stream? maskImageStream = null)
+    public static IcoFileBitmapFrame CreateFromImages(Stream imageStream, Stream? maskImageStream = null)
     {
         ArgumentNullException.ThrowIfNull(imageStream);
 
@@ -34,9 +34,7 @@ public class IcoBitmapFrame : IcoFrame
         try
         {
             imageBuffer.AsSpan().Clear();
-
             imageStream.ReadExactly(imageBuffer.AsSpan(0, length));
-
             if (!Bitmap.IsSupported(imageBuffer.AsSpan(), length))
             {
                 throw new ArgumentException();
@@ -51,7 +49,7 @@ public class IcoBitmapFrame : IcoFrame
             var originalImage = Bitmap.FromFile(imageBuffer.AsSpan(0, length));
             var maskImage = maskImageStream == null ? GenerateMask(originalImage) : Bitmap.FromFile(maskImageStream);
 
-            return new IcoBitmapFrame(originalImage, maskImage);
+            return new IcoFileBitmapFrame(originalImage, maskImage);
         }
         finally
         {
@@ -59,7 +57,7 @@ public class IcoBitmapFrame : IcoFrame
         }
     }
 
-    public static IcoBitmapFrame LoadFromIcoEntry(Span<byte> entryBuffer)
+    public static IcoFileBitmapFrame LoadFromIcoEntry(Span<byte> entryBuffer)
     {
         const int BITMAP_INFO_HEADER_SIZE = 40;
         const int BITMAP_HEADER_WIDTH = 0x04;
@@ -79,31 +77,22 @@ public class IcoBitmapFrame : IcoFrame
 
         var colorTableLength = colorCount * sizeof(uint);
         var pixelBufferLength = Bitmap.GetStride(width, bitCount) * height;
-        var maskPixelBufferLength = Bitmap.GetStride(width, 1) * height;
 
-        var colorTable = Bitmap.ParseColorTable(entryBuffer.Slice(BITMAP_INFO_HEADER_SIZE, colorTableLength));
-        var pixelBuffer = entryBuffer.Slice(BITMAP_INFO_HEADER_SIZE + colorTableLength);
-        var bitmaskBuffer = entryBuffer.Slice(BITMAP_INFO_HEADER_SIZE + colorTableLength + pixelBufferLength);
+        var data = entryBuffer.Slice(BITMAP_INFO_HEADER_SIZE);
 
-        var originalImage = new Bitmap(
-            width,
-            height,
-            bitCount,
-            entryBuffer.Slice(BITMAP_INFO_HEADER_SIZE + colorTableLength),
-            colorTable);
-        var maskImage = new Bitmap(
-            width,
-            height,
-            1,
-            entryBuffer.Slice(BITMAP_INFO_HEADER_SIZE + colorTableLength + pixelBufferLength),
-            [0x000000, 0xFFFFFF]);
+        var colorTable = Bitmap.ParseColorTable(data.Slice(0, colorTableLength));
+        var pixelBuffer = data.Slice(colorTableLength, pixelBufferLength);
+        var bitmaskBuffer = data.Slice(colorTableLength + pixelBufferLength);
 
-        return new IcoBitmapFrame(originalImage, maskImage);
+        var originalImage = new Bitmap(width, height, bitCount, pixelBuffer, colorTable);
+        var maskImage = new Bitmap(width, height, 1, bitmaskBuffer, [0x000000, 0xFFFFFF]);
+
+        return new IcoFileBitmapFrame(originalImage, maskImage);
     }
 
-    private Bitmap image, originalImage, maskImage;
+    private readonly Bitmap originalImage, maskImage;
 
-    private IcoBitmapFrame(Bitmap originalImage, Bitmap maskImage)
+    private IcoFileBitmapFrame(Bitmap originalImage, Bitmap maskImage)
     {
         ArgumentNullException.ThrowIfNull(originalImage);
         ArgumentNullException.ThrowIfNull(maskImage);
@@ -111,28 +100,33 @@ public class IcoBitmapFrame : IcoFrame
         this.originalImage = originalImage;
         this.maskImage = maskImage;
 
+        Width = originalImage.Width;
+        Height = originalImage.Height;
+        BitCount = originalImage.BitCount;
+        Length = originalImage.GetLength(false) + Bitmap.GetStride(Width, 1) * Height;
+
         ImageData = GenerateImage(originalImage, maskImage);
         OriginalImageData = GetImageData(originalImage);
         MaskImageData = GetImageData(maskImage);
     }
 
-    public override int Width => originalImage.Width;
+    public int Width { get; }
 
-    public override int Height => originalImage.Height;
+    public int Height { get; }
 
-    public int BitCount => originalImage.BitCount;
+    public int BitCount { get; }
 
-    public override int FrameLength => originalImage.GetLength(false) + Bitmap.GetStride(Width, 1) * Height;
+    public int Length { get; }
 
-    public override ImmutableArray<byte> ImageData { get; }
+    public ImmutableArray<byte> ImageData { get; }
 
     public ImmutableArray<byte> OriginalImageData { get; }
 
     public ImmutableArray<byte> MaskImageData { get; }
 
-    public override void SaveFrame(Span<byte> buffer)
+    public void Save(Span<byte> buffer)
     {
-        ArgumentOutOfRangeException.ThrowIfNotEqual(buffer.Length, FrameLength);
+        ArgumentOutOfRangeException.ThrowIfNotEqual(buffer.Length, Length);
 
         originalImage.Save(buffer, false);
         maskImage.SaveBitmask(buffer.Slice(originalImage.GetLength(false)), x => (x & 0xFFFFFF) != 0xFFFFFF);

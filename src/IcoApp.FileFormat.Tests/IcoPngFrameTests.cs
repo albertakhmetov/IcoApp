@@ -28,7 +28,7 @@ public class IcoPngFrameTests
     [Fact]
     public void CreateFromImage_NullStream()
     {
-        Assert.Throws<ArgumentNullException>(() => { IcoPngFrame.CreateFromImage(null as Stream); });
+        Assert.Throws<ArgumentNullException>(() => { IcoFilePngFrame.CreateFromImage(null as Stream); });
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class IcoPngFrameTests
     {
         using var stream = Core.OpenFile("rectangular/image-32.bmp");
 
-        Assert.Throws<ArgumentException>(() => { IcoPngFrame.CreateFromImage(stream); });
+        Assert.Throws<ArgumentException>(() => { IcoFilePngFrame.CreateFromImage(stream); });
     }
 
     [Fact]
@@ -44,11 +44,11 @@ public class IcoPngFrameTests
     {
         using var stream = Core.OpenFile("rectangular/image.png");
 
-        var frame = IcoPngFrame.CreateFromImage(stream);
+        var frame = IcoFilePngFrame.CreateFromImage(stream);
 
         Assert.Equal(96, frame.Width);
         Assert.Equal(64, frame.Height);
-        Assert.Equal(stream.Length, frame.FrameLength);
+        Assert.Equal(stream.Length, frame.Length);
     }
 
     [Fact]
@@ -61,11 +61,11 @@ public class IcoPngFrameTests
         {
             stream.ReadExactly(buffer.AsSpan(0, (int)stream.Length));
 
-            var frame = IcoPngFrame.LoadFromIcoEntry(buffer.AsSpan(0, (int)stream.Length));
+            var frame = IcoFilePngFrame.LoadFromIcoEntry(buffer.AsSpan(0, (int)stream.Length));
 
             Assert.Equal(96, frame.Width);
             Assert.Equal(64, frame.Height);
-            Assert.Equal(stream.Length, frame.FrameLength);
+            Assert.Equal(stream.Length, frame.Length);
         }
         finally
         {
@@ -78,38 +78,38 @@ public class IcoPngFrameTests
     {
         const string fileName = "rectangular/image.png";
 
-        var frame = IcoPngFrame.CreateFromImage(Core.OpenFile(fileName));
+        var frame = IcoFilePngFrame.CreateFromImage(Core.OpenFile(fileName));
 
         Core.Compare(fileName, frame.ImageData);
     }
 
     [Fact]
-    public void SaveFrame_BufferIsLess()
+    public void Save_BufferIsLess()
     {
-        var frame = IcoPngFrame.CreateFromImage(Core.OpenFile("rectangular/image.png"));
+        var frame = IcoFilePngFrame.CreateFromImage(Core.OpenFile("rectangular/image.png"));
 
-        var buffer = new byte[frame.FrameLength - 1];
-        Assert.Throws<ArgumentException>(() => frame.SaveFrame(buffer));
+        var buffer = new byte[frame.Length - 1];
+        Assert.Throws<ArgumentException>(() => frame.Save(buffer));
     }
 
     [Fact]
-    public void SaveFrame_BufferIsGreater()
+    public void Save_BufferIsGreater()
     {
-        var frame = IcoPngFrame.CreateFromImage(Core.OpenFile("rectangular/image.png"));
+        var frame = IcoFilePngFrame.CreateFromImage(Core.OpenFile("rectangular/image.png"));
 
-        var buffer = new byte[frame.FrameLength + 1];
-        Assert.Throws<ArgumentException>(() => frame.SaveFrame(buffer));
+        var buffer = new byte[frame.Length + 1];
+        Assert.Throws<ArgumentException>(() => frame.Save(buffer));
     }
 
     [Fact]
-    public void SaveFrame()
+    public void Save()
     {
         const string fileName = "rectangular/image.png";
 
-        var frame = IcoPngFrame.CreateFromImage(Core.OpenFile(fileName));
+        var frame = IcoFilePngFrame.CreateFromImage(Core.OpenFile(fileName));
 
-        var buffer = new byte[frame.FrameLength];
-        frame.SaveFrame(buffer);
+        var buffer = new byte[frame.Length];
+        frame.Save(buffer);
 
         using var memoryStream = new MemoryStream(buffer, false);
         Core.Compare(fileName, memoryStream);

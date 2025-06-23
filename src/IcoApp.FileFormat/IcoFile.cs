@@ -22,16 +22,16 @@ using System;
 using System.Buffers;
 using IcoApp.FileFormat.Internal;
 
-public class IcoFile
+public static class IcoFile
 {
     private const int DIR_SIZE = 0x06;
     private const int DIR_ENTRY_SIZE = 0x10;
 
-    public IList<IcoFrame> Load(Stream stream)
+    public static IList<IIcoFileFrame> Load(Stream stream)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        var frames = new List<IcoFrame>();
+        var frames = new List<IIcoFileFrame>();
 
         var length = (int)stream.Length;
 
@@ -60,7 +60,7 @@ public class IcoFile
         return frames;
     }
 
-    private IcoFrame ParseFrame(Span<byte> buffer, int frameId)
+    private static IIcoFileFrame ParseFrame(Span<byte> buffer, int frameId)
     {
         var entryBuffer = buffer
             .Slice(DIR_SIZE)
@@ -75,15 +75,15 @@ public class IcoFile
 
         if (Png.IsSupported(frameBuffer))
         {
-            return IcoPngFrame.LoadFromIcoEntry(frameBuffer);
+            return IcoFilePngFrame.LoadFromIcoEntry(frameBuffer);
         }
         else
         {
-            return IcoBitmapFrame.LoadFromIcoEntry(frameBuffer);
+            return IcoFileBitmapFrame.LoadFromIcoEntry(frameBuffer);
         }
     }
 
-    public void Save(Stream stream, IList<IcoFrame> frames)
+    public static void Save(Stream stream, IList<IIcoFileFrame> frames)
     {
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(frames);
@@ -102,7 +102,7 @@ public class IcoFile
         stream.Flush();
     }
 
-    private static void WriteDirectory(Stream stream, IList<IcoFrame> frames)
+    private static void WriteDirectory(Stream stream, IList<IIcoFileFrame> frames)
     {
         var dirLength = DIR_SIZE + frames.Count * DIR_ENTRY_SIZE;
 
@@ -120,7 +120,7 @@ public class IcoFile
             {
                 var entryBuffer = buffer.AsSpan(DIR_SIZE).Slice(i * DIR_ENTRY_SIZE, DIR_ENTRY_SIZE);
                 var frame = frames[i];
-                var bitCount = frame is IcoBitmapFrame bitmapFrame ? bitmapFrame.BitCount : 32;
+                var bitCount = frame is IcoFileBitmapFrame bitmapFrame ? bitmapFrame.BitCount : 32;
 
                 entryBuffer[0] = (byte)(frame.Width == 256 ? 0 : frame.Width);
                 entryBuffer[1] = (byte)(frame.Height == 256 ? 0 : frame.Height);
@@ -129,10 +129,10 @@ public class IcoFile
                 BitConverter.TryWriteBytes(entryBuffer[4..], (short)1).IsTrue();
                 BitConverter.TryWriteBytes(entryBuffer[6..], (short)bitCount).IsTrue();
 
-                BitConverter.TryWriteBytes(entryBuffer[8..], frame.FrameLength).IsTrue();
+                BitConverter.TryWriteBytes(entryBuffer[8..], frame.Length).IsTrue();
                 BitConverter.TryWriteBytes(entryBuffer[12..], pos).IsTrue();
 
-                pos += frame.FrameLength;
+                pos += frame.Length;
             }
 
             stream.Write(buffer.AsSpan(0, dirLength));
@@ -143,14 +143,14 @@ public class IcoFile
         }
     }
 
-    private void WriteFrame(Stream stream, IcoFrame frame)
+    private static void WriteFrame(Stream stream, IIcoFileFrame frame)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(frame.FrameLength);
+        var buffer = ArrayPool<byte>.Shared.Rent(frame.Length);
         try
         {
             buffer.AsSpan().Clear();
-            frame.SaveFrame(buffer.AsSpan(0, frame.FrameLength));
-            stream.Write(buffer.AsSpan(0, frame.FrameLength));
+            frame.Save(buffer.AsSpan(0, frame.Length));
+            stream.Write(buffer.AsSpan(0, frame.Length));
         }
         finally
         {

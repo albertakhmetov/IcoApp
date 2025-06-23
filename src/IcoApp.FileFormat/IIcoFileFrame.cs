@@ -21,17 +21,15 @@ namespace IcoApp.FileFormat;
 using System.Buffers;
 using System.Collections.Immutable;
 
-public abstract class IcoFrame : IDisposable
+public interface IIcoFileFrame
 {
-    public abstract int Width { get; }
+    int Width { get; }
 
-    public abstract int Height { get; }
+    int Height { get; }
 
-    public abstract int FrameLength { get; }
+    int Length { get; }
 
-    public abstract ImmutableArray<byte> ImageData { get; }
+    ImmutableArray<byte> ImageData { get; }
 
-    public virtual void Dispose() { }
-
-    public abstract void SaveFrame(Span<byte> buffer);
+    void Save(Span<byte> buffer);
 }

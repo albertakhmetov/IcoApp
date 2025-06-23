@@ -23,6 +23,7 @@ using System.Numerics;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using IcoApp.Core.Models;
+using IcoApp.FileFormat.Internal;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Geometry;

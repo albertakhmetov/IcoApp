@@ -31,7 +31,7 @@ public class IcoBitmapFrameTests
     [Fact]
     public void Ctor_NullStream()
     {
-        Assert.Throws<ArgumentNullException>(() => { IcoBitmapFrame.CreateFromImages(null as Stream); });
+        Assert.Throws<ArgumentNullException>(() => { IcoFileBitmapFrame.CreateFromImages(null as Stream); });
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class IcoBitmapFrameTests
     {
         using var stream = Core.OpenFile("rectangular/image.png");
 
-        Assert.Throws<ArgumentException>(() => { IcoBitmapFrame.CreateFromImages(stream); });
+        Assert.Throws<ArgumentException>(() => { IcoFileBitmapFrame.CreateFromImages(stream); });
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class IcoBitmapFrameTests
     {
         using var stream = Core.OpenFile("rectangular/image-32.bmp");
 
-        var frame = IcoBitmapFrame.CreateFromImages(stream);
+        var frame = IcoFileBitmapFrame.CreateFromImages(stream);
 
         Assert.Equal(96, frame.Width);
         Assert.Equal(64, frame.Height);
@@ -60,7 +60,7 @@ public class IcoBitmapFrameTests
     [InlineData("rectangular/image-24.bmp")]
     public void Ctor_NonTransparentWithoutMask_Invalid(string fileName)
     {
-        Assert.Throws<ArgumentNullException>(() => IcoBitmapFrame.CreateFromImages(Core.OpenFile(fileName), maskImageStream: null));
+        Assert.Throws<ArgumentNullException>(() => IcoFileBitmapFrame.CreateFromImages(Core.OpenFile(fileName), maskImageStream: null));
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class IcoBitmapFrameTests
 
                 if (!Png.IsSupported(buffer.AsSpan(pos)))
                 {
-                    var frame = IcoBitmapFrame.LoadFromIcoEntry(buffer.AsSpan(pos, size));
+                    var frame = IcoFileBitmapFrame.LoadFromIcoEntry(buffer.AsSpan(pos, size));
 
                     Assert.Equal(96, frame.Width);
                     Assert.Equal(64, frame.Height);
@@ -127,7 +127,7 @@ public class IcoBitmapFrameTests
     [InlineData("rectangular/image-32.bmp")]
     public void GetImage(string fileName)
     {
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile(fileName), Core.OpenFile("rectangular/mask.bmp"));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile(fileName), Core.OpenFile("rectangular/mask.bmp"));
 
         Core.Compare("rectangular/image-32.bmp", frame.ImageData);
     }
@@ -137,7 +137,7 @@ public class IcoBitmapFrameTests
     {
         const string fileName = "rectangular/image-32.bmp";
 
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile(fileName));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile(fileName));
 
         Core.Compare(fileName, frame.OriginalImageData);
     }
@@ -149,7 +149,7 @@ public class IcoBitmapFrameTests
     [InlineData("rectangular/image-24.bmp")]
     public void GetMaskImage(string fileName)
     {
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile(fileName), Core.OpenFile("rectangular/mask.bmp"));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile(fileName), Core.OpenFile("rectangular/mask.bmp"));
 
         Core.Compare("rectangular/mask.bmp", frame.MaskImageData);
     }
@@ -157,27 +157,27 @@ public class IcoBitmapFrameTests
     [Fact]
     public void GetMaskImage_Generated()
     {
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile("rectangular/image-32.bmp"));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile("rectangular/image-32.bmp"));
 
         Core.Compare("rectangular/mask.bmp", frame.MaskImageData);
     }
 
     [Fact]
-    public void SaveFrame_BufferIsLess()
+    public void Save_BufferIsLess()
     {
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile("rectangular/image-32.bmp"));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile("rectangular/image-32.bmp"));
 
-        var buffer = new byte[frame.FrameLength - 1];
-        Assert.Throws<ArgumentOutOfRangeException>(() => frame.SaveFrame(buffer));
+        var buffer = new byte[frame.Length - 1];
+        Assert.Throws<ArgumentOutOfRangeException>(() => frame.Save(buffer));
     }
 
     [Fact]
-    public void SaveFrame_BufferIsGreater()
+    public void Save_BufferIsGreater()
     {
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile("rectangular/image-32.bmp"));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile("rectangular/image-32.bmp"));
 
-        var buffer = new byte[frame.FrameLength + 1];
-        Assert.Throws<ArgumentOutOfRangeException>(() => frame.SaveFrame(buffer));
+        var buffer = new byte[frame.Length + 1];
+        Assert.Throws<ArgumentOutOfRangeException>(() => frame.Save(buffer));
     }
 
     [Theory]
@@ -185,14 +185,14 @@ public class IcoBitmapFrameTests
     [InlineData("rectangular/image-8.bmp")]
     [InlineData("rectangular/image-24.bmp")]
     [InlineData("rectangular/image-32.bmp")]
-    public void SaveFrame(string fileName)
+    public void Save(string fileName)
     {
         const string expectedFileName = "rectangular/image-32.bmp";
 
-        var frame = IcoBitmapFrame.CreateFromImages(Core.OpenFile(fileName), Core.OpenFile("rectangular/mask.bmp"));
+        var frame = IcoFileBitmapFrame.CreateFromImages(Core.OpenFile(fileName), Core.OpenFile("rectangular/mask.bmp"));
 
-        var buffer = new byte[frame.FrameLength];
-        frame.SaveFrame(buffer);
+        var buffer = new byte[frame.Length];
+        frame.Save(buffer);
 
         Core.CompareFrames(expectedFileName, buffer);
     }

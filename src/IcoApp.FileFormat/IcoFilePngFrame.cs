@@ -23,59 +23,60 @@ using System.Buffers;
 using System.Collections.Immutable;
 using IcoApp.FileFormat.Internal;
 
-public class IcoPngFrame : IcoFrame
+public class IcoFilePngFrame : IIcoFileFrame
 {
-    public static IcoPngFrame CreateFromImage(Stream imageStream)
+    public static IcoFilePngFrame CreateFromImage(Stream imageStream)
     {
         ArgumentNullException.ThrowIfNull(imageStream);
 
-        return new IcoPngFrame(imageStream, []);
+        var lenght = imageStream.Length.ToInt32();
+        var buffer = ArrayPool<byte>.Shared.Rent(lenght);
+
+        try
+        {
+            var imageData = buffer.AsSpan(0, lenght);
+            imageStream.ReadExactly(imageData);
+
+            return new IcoFilePngFrame(imageData);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
-    public static IcoPngFrame LoadFromIcoEntry(Span<byte> entryBuffer)
+    public static IcoFilePngFrame LoadFromIcoEntry(Span<byte> entryBuffer)
     {
-        return new IcoPngFrame(null, entryBuffer);
+        return new IcoFilePngFrame(entryBuffer);
     }
 
-    private IcoPngFrame(Stream? stream, Span<byte> entryBuffer)
+    private IcoFilePngFrame(Span<byte> imageData)
     {
-        FrameLength = stream != null ? (int)stream.Length : entryBuffer.Length;
-
-        var imageData = new byte[FrameLength];
-
-        if (stream != null)
-        {
-            stream.ReadExactly(imageData.AsSpan(0, FrameLength));
-        }
-        else
-        {
-            entryBuffer.CopyTo(imageData.AsSpan(0, FrameLength));
-        }
-
         if (!Png.IsSupported(imageData))
         {
-            throw new ArgumentException();
+            throw new ArgumentException("Invalid PNG format.");
         }
 
         Png.ParseSize(imageData, out var width, out var height);
 
         Width = width;
         Height = height;
+        Length = imageData.Length;
 
         ImageData = ImmutableArray.Create(imageData);
     }
 
-    public override int Width { get; }
+    public int Width { get; }
 
-    public override int Height { get; }
+    public int Height { get; }
 
-    public override int FrameLength { get; }
+    public int Length { get; }
 
-    public override ImmutableArray<byte> ImageData { get; }
+    public ImmutableArray<byte> ImageData { get; }
 
-    public override void SaveFrame(Span<byte> buffer)
+    public void Save(Span<byte> buffer)
     {
-        if (buffer.Length != FrameLength)
+        if (buffer.Length != Length)
         {
             throw new ArgumentException();
         }
