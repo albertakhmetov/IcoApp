@@ -36,14 +36,17 @@ public class SettingsViewModel : ViewModel
     private readonly CompositeDisposable disposable = [];
 
     private readonly ISettingsService settingsService;
+    private readonly IAppService appService;
 
     private WindowTheme windowTheme;
 
-    public SettingsViewModel(ISettingsService settingsService)
+    public SettingsViewModel(ISettingsService settingsService, IAppService appService)
     {
         ArgumentNullException.ThrowIfNull(settingsService);
+        ArgumentNullException.ThrowIfNull(appService);
 
         this.settingsService = settingsService;
+        this.appService = appService;
 
         WindowThemes = [WindowTheme.System, WindowTheme.Dark, WindowTheme.Light];
 
@@ -57,6 +60,14 @@ public class SettingsViewModel : ViewModel
     }
 
     public IImmutableList<WindowTheme> WindowThemes { get; }
+
+    public string ProductName => appService.AppInfo.ProductName;
+
+    public string ProductVersion => appService.AppInfo.FileVersion.ToString();
+
+    public string LegalCopyright => appService.AppInfo.LegalCopyright ?? string.Empty;
+
+    public string ProductDescription => appService.AppInfo.ProductDescription ?? string.Empty;
 
     public void Dispose()
     {

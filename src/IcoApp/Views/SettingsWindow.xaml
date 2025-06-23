@@ -17,6 +17,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
         <Grid.Resources>
@@ -62,5 +63,29 @@
                     ItemsSource="{x:Bind ViewModel.WindowThemes, Mode=OneWay}"/>
             </Grid>
         </Border>
+
+        <StackPanel 
+            Grid.Row="2"            
+            Orientation="Vertical"
+            Margin="24,12">
+            <TextBlock
+                Style="{ThemeResource SubtitleTextBlockStyle}"
+                Margin="4,2">
+                <Run Text="{x:Bind ViewModel.ProductName}"/>
+                <Run Text="{x:Bind ViewModel.ProductVersion}"/>
+            </TextBlock>
+
+            <TextBlock 
+                Text="{x:Bind ViewModel.LegalCopyright}"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Margin="4,2"/>
+
+            <TextBlock 
+                Text="{x:Bind ViewModel.ProductDescription}"
+                Style="{ThemeResource BodyTextBlockStyle}"
+                HorizontalAlignment="Stretch"
+                Margin="4,16"/>
+
+        </StackPanel>
     </Grid>
 </Window>

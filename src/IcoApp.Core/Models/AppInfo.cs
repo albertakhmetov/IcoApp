@@ -16,28 +16,26 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Core.Models;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IcoApp.Core.Models;
-using IcoApp.Core.ViewModels;
 
-public interface IAppService
+public class AppInfo
 {
-    AppInfo AppInfo { get; }
+    public string ProductName { get; init; }
 
-    IImmutableList<FileType> SupportedImageTypes { get; }
+    public string? ProductVersion { get; init; }
 
-    IImmutableList<FileType> SupportedFileTypes { get; }
+    public string? ProductDescription { get; init; }
 
-    nint Handle { get; }
+    public string? LegalCopyright { get; init; }
 
-    string UserDataPath { get; }
+    public required Version FileVersion { get; init; }
 
-    Task<bool> Show(DialogViewModel viewModel);
+    public required bool IsPreRelease { get; init; }
 }

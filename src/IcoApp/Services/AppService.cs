@@ -22,8 +22,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
@@ -43,7 +45,11 @@ internal class AppService : IAppService
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
         this.serviceProvider = serviceProvider;
+
+        AppInfo = LoadAppInfo();
     }
+
+    public AppInfo AppInfo { get; }
 
     public IImmutableList<FileType> SupportedImageTypes { get; } = [FileType.Png, FileType.Bmp];
 
@@ -95,5 +101,25 @@ internal class AppService : IAppService
         dialog.Content = null;
 
         return result == ContentDialogResult.Primary;
+    }
+
+    private AppInfo LoadAppInfo()
+    {
+        var info = FileVersionInfo.GetVersionInfo(new FileInfo(typeof(AppService).Assembly.Location).FullName);
+
+        return new AppInfo
+        {
+            ProductName = info.ProductName ?? "IcoApp",
+            ProductVersion = info.ProductVersion,
+            ProductDescription = info.Comments,
+            LegalCopyright = info.LegalCopyright,
+            FileVersion = new Version(
+                info.FileMajorPart,
+                info.FileMinorPart,
+                info.FileBuildPart,
+                info.FilePrivatePart),
+
+            IsPreRelease = Regex.IsMatch(info.ProductVersion ?? "", "[a-zA-Z]")
+        };
     }
 }
