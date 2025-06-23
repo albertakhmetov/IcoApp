@@ -1,4 +1,4 @@
-﻿/*  Copyright © 2025, Albert Akhmetov <akhmetov@live.com>   
+/*  Copyright � 2025, Albert Akhmetov <akhmetov@live.com>   
  *
  *  This file is part of IcoApp.
  *
@@ -18,61 +18,62 @@
  */
 namespace IcoApp.Views;
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using IcoApp.Core;
+using System.Runtime.InteropServices.WindowsRuntime;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using WinRT.Interop;
+using Microsoft.UI.Xaml.Navigation;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 
-public partial class MainWindow : Window
+public sealed partial class SettingsWindow : Window
 {
     private readonly CompositeDisposable disposable = [];
     private readonly ISettingsService settingsService;
 
-    public MainWindow(
-        ISettingsService settingsService,
-        IcoViewModel icoViewModel,
-        IcoFramesViewModel icoFramesViewModel,
-        URViewModel urViewModel)
+    public SettingsWindow(ISettingsService settingsService, SettingsViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(settingsService);
+        ArgumentNullException.ThrowIfNull(viewModel);
 
         this.settingsService = settingsService;
 
-        IcoViewModel = icoViewModel;
-        IcoFramesViewModel = icoFramesViewModel;
-        URViewModel = urViewModel;
-        SettingsCommand = new RelayCommand(_ => this.settingsService.Show());    
+        ViewModel = viewModel;
 
-        this.InitializeComponent();
+        InitializeComponent();
+
+        var presenter = OverlappedPresenter.Create();
+        presenter.PreferredMinimumWidth = 600;
+        presenter.PreferredMaximumWidth = 800;
+        presenter.PreferredMinimumHeight = 600;
+        presenter.IsMinimizable = false;
+        presenter.IsMaximizable = false;
+        presenter.SetBorderAndTitleBar(true, true);
+        AppWindow.SetPresenter(presenter);
 
         ExtendsContentIntoTitleBar = true;
-
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetTitleBar(AppTitleBar);
 
-        AppWindow.Closing += AppWindow_Closing; Closed += OnClosed;
-        
+        Closed += OnClosed;
+
         InitSubscriptions();
     }
 
-    public IcoViewModel IcoViewModel { get; }
-
-    public IcoFramesViewModel IcoFramesViewModel { get; }
-
-    public URViewModel URViewModel { get; }
-
-    public RelayCommand SettingsCommand { get; }
+    public SettingsViewModel ViewModel { get; }
 
     private void InitSubscriptions()
     {
@@ -99,16 +100,6 @@ public partial class MainWindow : Window
                 WindowTheme.Light => ElementTheme.Light,
                 _ => ElementTheme.Default
             };
-        }
-    }   
-    
-    private async void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
-    {
-        args.Cancel = true;
-
-        if (await IcoViewModel.ConfirmChanges() is true)
-        {
-            App.Current.Exit();
         }
     }
 

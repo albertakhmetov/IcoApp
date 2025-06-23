@@ -16,15 +16,20 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Commands;
+namespace IcoApp.Core.Services;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Models;
 
-public interface IAppCommand<T>
+public interface ISettingsService
 {
-    Task ExecuteAsync(T parameters);
+    IObservable<WindowTheme> WindowTheme { get; }
+
+    void SetWindowTheme(WindowTheme windowTheme);
+
+    void Show();
 }

@@ -29,6 +29,7 @@ using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
 using IcoApp.Helpers;
+using IcoApp.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;

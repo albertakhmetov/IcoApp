@@ -89,10 +89,12 @@ public partial class App : Application
         var builder = Host.CreateApplicationBuilder();
 
         builder.Services.AddSingleton<MainWindow>();
+        builder.Services.AddSingleton<SettingsWindow>();
 
         builder.Services.AddSingleton<IAppService, AppService>();
         builder.Services.AddSingleton<IFileService, FileService>();
         builder.Services.AddSingleton<IIcoService, IcoService>();
+        builder.Services.AddSingleton<ISettingsService, SettingsService>();
 
         builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
         builder.Services
@@ -105,6 +107,7 @@ public partial class App : Application
         builder.Services.AddSingleton<IcoViewModel>();
         builder.Services.AddSingleton<IcoFramesViewModel>();
         builder.Services.AddSingleton<URViewModel>();
+        builder.Services.AddSingleton<SettingsViewModel>();
 
         builder.Services.AddKeyedSingleton<UserControl, ConfirmationDialogView>(nameof(ConfirmationDialogViewModel));
 

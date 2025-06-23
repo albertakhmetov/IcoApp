@@ -48,7 +48,7 @@
 
                     <AppBarSeparator/>
 
-                    <Button>
+                    <Button Command="{x:Bind SettingsCommand}">
                         <FontIcon Glyph="&#xE713;" />
                     </Button>
 
