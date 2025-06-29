@@ -20,10 +20,15 @@ namespace IcoApp;
 
 using System;
 using System.Collections.Immutable;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using IcoApp.Core.Commands;
+using IcoApp.Core.Helpers;
+using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
+using IcoApp.Helpers;
 using IcoApp.Services;
 using IcoApp.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,14 +63,30 @@ public partial class App : Application
     private static App? instance;
 
     private readonly ImmutableArray<string> arguments;
-    private IHost? host;
+    private IHost host;
     private MainWindow? mainWindow;
 
     public App(string[] args)
     {
+        host = CreateHost();
+
         this.arguments = ImmutableArray.Create(args);
 
         InitializeComponent();
+
+        var theme = host.Services.GetRequiredService<ISettingsService>().WindowTheme.Value;
+
+        switch (theme)
+        {
+            case WindowTheme.Dark:
+                RequestedTheme = ApplicationTheme.Dark;
+                break;
+
+            case WindowTheme.Light:
+                RequestedTheme = ApplicationTheme.Light;
+                break;
+        }
+
     }
 
     public nint? Handle => mainWindow == null ? null : WindowNative.GetWindowHandle(mainWindow);
@@ -76,7 +97,6 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        host = CreateHost();
 
         mainWindow = host.Services.GetRequiredService<MainWindow>();
         mainWindow.AppWindow.Show();
@@ -95,6 +115,7 @@ public partial class App : Application
         builder.Services.AddSingleton<IFileService, FileService>();
         builder.Services.AddSingleton<IIcoService, IcoService>();
         builder.Services.AddSingleton<ISettingsService, SettingsService>();
+        builder.Services.AddSingleton<ISystemEventsService, SystemEventsService>();
 
         builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
         builder.Services

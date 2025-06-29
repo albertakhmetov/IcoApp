@@ -56,18 +56,20 @@ public class SettingsViewModel : ViewModel
     public WindowTheme WindowTheme
     {
         get => windowTheme;
-        set => settingsService.SetWindowTheme(value);
+        set => settingsService.WindowTheme.Value = value;
     }
 
     public IImmutableList<WindowTheme> WindowThemes { get; }
 
     public string ProductName => appService.AppInfo.ProductName;
 
-    public string ProductVersion => appService.AppInfo.FileVersion.ToString();
+    public string Version => appService.AppInfo.FileVersion.ToString(3);
 
     public string LegalCopyright => appService.AppInfo.LegalCopyright ?? string.Empty;
 
     public string ProductDescription => appService.AppInfo.ProductDescription ?? string.Empty;
+
+    public string ProductVersion => string.IsNullOrEmpty(appService.AppInfo.ProductVersion) ? string.Empty : $"Build {appService.AppInfo.ProductVersion}";
 
     public void Dispose()
     {

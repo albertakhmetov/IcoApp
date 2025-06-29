@@ -39,5 +39,7 @@ public interface IAppService
 
     string UserDataPath { get; }
 
+    Task ShowSettings();
+
     Task<bool> Show(DialogViewModel viewModel);
 }

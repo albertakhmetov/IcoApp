@@ -27,6 +27,7 @@ using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
+using IcoApp.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -38,31 +39,41 @@ public partial class MainWindow : Window
 {
     private readonly CompositeDisposable disposable = [];
     private readonly ISettingsService settingsService;
+    private readonly ISystemEventsService systemEventsService;
 
     public MainWindow(
+        IAppService appService,
         ISettingsService settingsService,
+        ISystemEventsService systemEventsService,
         IcoViewModel icoViewModel,
         IcoFramesViewModel icoFramesViewModel,
         URViewModel urViewModel)
     {
+        ArgumentNullException.ThrowIfNull(appService);
         ArgumentNullException.ThrowIfNull(settingsService);
+        ArgumentNullException.ThrowIfNull(systemEventsService);
 
         this.settingsService = settingsService;
+        this.systemEventsService = systemEventsService;
 
         IcoViewModel = icoViewModel;
         IcoFramesViewModel = icoFramesViewModel;
         URViewModel = urViewModel;
-        SettingsCommand = new RelayCommand(_ => this.settingsService.Show());    
+        SettingsCommand = new RelayCommand(_ => appService.ShowSettings());
 
         this.InitializeComponent();
 
         ExtendsContentIntoTitleBar = true;
 
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        AppWindow.SetIcon("Assets/IcoApp.ico");
+        AppWindow.Title = appService.AppInfo.ProductName;
+
         SetTitleBar(AppTitleBar);
 
-        AppWindow.Closing += AppWindow_Closing; Closed += OnClosed;
-        
+        AppWindow.Closing += AppWindow_Closing;
+        Closed += OnClosed;
+
         InitSubscriptions();
     }
 
@@ -81,27 +92,17 @@ public partial class MainWindow : Window
             throw new InvalidOperationException("SynchronizationContext.Current can't be null");
         }
 
-        settingsService
-            .WindowTheme
+        Observable
+            .CombineLatest(
+                settingsService.WindowTheme, 
+                systemEventsService.AppDarkTheme,
+                (theme, isSystemDark) => theme == WindowTheme.Dark || theme == WindowTheme.System && isSystemDark)
             .DistinctUntilChanged()
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => UpdateWindowTheme(x))
+            .Subscribe(isDarkTheme => this.UpdateTheme(isDarkTheme))
             .DisposeWith(disposable);
     }
 
-    private void UpdateWindowTheme(WindowTheme x)
-    {
-        if (Content is Grid grid)
-        {
-            grid.RequestedTheme = x switch
-            {
-                WindowTheme.Dark => ElementTheme.Dark,
-                WindowTheme.Light => ElementTheme.Light,
-                _ => ElementTheme.Default
-            };
-        }
-    }   
-    
     private async void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
     {
         args.Cancel = true;

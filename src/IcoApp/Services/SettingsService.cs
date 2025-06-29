@@ -21,64 +21,95 @@ namespace IcoApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
+using IcoApp.Helpers;
 using IcoApp.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
+using Windows.Services.Maps;
 
 internal class SettingsService : ISettingsService, IDisposable
 {
-    private readonly IServiceProvider serviceProvider;
-    private readonly BehaviorSubject<WindowTheme> windowThemeSubject;
-    private SettingsWindow? window;
+    private const string SETTINGS_FILENAME = "settings.json";
 
-    public SettingsService(IServiceProvider serviceProvider)
+    private readonly CompositeDisposable disposable = [];
+    private readonly IFileService fileService;
+
+    public SettingsService(IFileService fileService)
     {
-        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(fileService);
 
-        this.serviceProvider = serviceProvider;
+        this.fileService = fileService;
 
-        windowThemeSubject = new BehaviorSubject<WindowTheme>(Core.Models.WindowTheme.System);
+        WindowTheme = new SettingsProperty<WindowTheme>(Core.Models.WindowTheme.System);
 
-        WindowTheme = windowThemeSubject.AsObservable();
+        LoadSettings();
+
+        WindowTheme
+            .DistinctUntilChanged()
+            .Select(x => true)
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Subscribe(_ => SaveSettings())
+            .DisposeWith(disposable);
     }
 
-    public IObservable<WindowTheme> WindowTheme { get; }
-
-    public void SetWindowTheme(WindowTheme windowTheme)
-    {
-        windowThemeSubject.OnNext(windowTheme);
-    }
-
-    public void Show()
-    {
-        if (window == null)
-        {
-            window = serviceProvider.GetRequiredService<SettingsWindow>();
-            window.AppWindow.Closing += OnWindowClosing;
-        }
-
-        window.AppWindow.Show();
-    }
+    public SettingsProperty<WindowTheme> WindowTheme { get; }
 
     public void Dispose()
     {
-        if (window?.AppWindow != null)
+        if (disposable.IsDisposed is false)
         {
-            window.AppWindow.Closing -= OnWindowClosing;
-            window.Close();
+            disposable.Dispose();
         }
     }
 
-    private void OnWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
+    private void LoadSettings()
     {
-        args.Cancel = true;
+        using var stream = fileService.ReadUserFile(SETTINGS_FILENAME);
 
-        sender?.Hide();
+        if (stream is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var node = JsonNode.Parse(stream);
+
+            var windowThemeNode = node?[nameof(ISettingsService.WindowTheme)];
+            if (windowThemeNode?.GetValueKind() == JsonValueKind.String
+                && Enum.TryParse<WindowTheme>(windowThemeNode.GetValue<string>(), out var windowTheme))
+            {
+                WindowTheme.Value = windowTheme;
+            }
+        }
+        catch (JsonException)
+        {
+        }
+    }
+
+    private void SaveSettings()
+    {
+        using var stream = fileService.WriteUserFile(SETTINGS_FILENAME, overwrite: true);
+
+        var windowTheme = WindowTheme.Value;
+
+        var options = new JsonWriterOptions { Indented = true };
+        using var writer = new Utf8JsonWriter(stream, options);
+
+        writer.WriteStartObject();
+
+        writer.WriteString(nameof(ISettingsService.WindowTheme), windowTheme.ToString());
+
+        writer.WriteEndObject();
     }
 }

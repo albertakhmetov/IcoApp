@@ -29,6 +29,8 @@ using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
+using IcoApp.Helpers;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -44,13 +46,16 @@ public sealed partial class SettingsWindow : Window
 {
     private readonly CompositeDisposable disposable = [];
     private readonly ISettingsService settingsService;
+    private readonly ISystemEventsService systemEventsService;
 
-    public SettingsWindow(ISettingsService settingsService, SettingsViewModel viewModel)
+    public SettingsWindow(ISettingsService settingsService, ISystemEventsService systemEventsService, SettingsViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(settingsService);
+        ArgumentNullException.ThrowIfNull(systemEventsService);
         ArgumentNullException.ThrowIfNull(viewModel);
 
         this.settingsService = settingsService;
+        this.systemEventsService = systemEventsService;
 
         ViewModel = viewModel;
 
@@ -62,10 +67,13 @@ public sealed partial class SettingsWindow : Window
         presenter.PreferredMinimumHeight = 600;
         presenter.IsMinimizable = false;
         presenter.IsMaximizable = false;
+        presenter.IsAlwaysOnTop = true;
         presenter.SetBorderAndTitleBar(true, true);
         AppWindow.SetPresenter(presenter);
+        AppWindow.IsShownInSwitchers = false;
 
         ExtendsContentIntoTitleBar = true;
+
         SetTitleBar(AppTitleBar);
 
         Closed += OnClosed;
@@ -82,25 +90,15 @@ public sealed partial class SettingsWindow : Window
             throw new InvalidOperationException("SynchronizationContext.Current can't be null");
         }
 
-        settingsService
-            .WindowTheme
+        Observable
+            .CombineLatest(
+                settingsService.WindowTheme,
+                systemEventsService.AppDarkTheme,
+                (theme, isSystemDark) => theme == WindowTheme.Dark || theme == WindowTheme.System && isSystemDark)
             .DistinctUntilChanged()
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(x => UpdateWindowTheme(x))
+            .Subscribe(isDarkTheme => this.UpdateTheme(isDarkTheme))
             .DisposeWith(disposable);
-    }
-
-    private void UpdateWindowTheme(WindowTheme x)
-    {
-        if (Content is Grid grid)
-        {
-            grid.RequestedTheme = x switch
-            {
-                WindowTheme.Dark => ElementTheme.Dark,
-                WindowTheme.Light => ElementTheme.Light,
-                _ => ElementTheme.Default
-            };
-        }
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

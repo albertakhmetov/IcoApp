@@ -18,14 +18,8 @@
  */
 namespace IcoApp.Core.Services;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IcoApp.Core.Models;
-
-public interface ISettingsService
+public interface ISystemEventsService
 {
-    SettingsProperty<WindowTheme> WindowTheme { get; }
+    IObservable<bool> AppDarkTheme { get; }
+    IObservable<bool> SystemDarkTheme { get; }
 }

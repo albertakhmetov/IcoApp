@@ -16,16 +16,33 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Core.Models;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
-using IcoApp.Core.Models;
 
-public interface ISettingsService
+
+public class SettingsProperty<T> : IObservable<T>
 {
-    SettingsProperty<WindowTheme> WindowTheme { get; }
+    private readonly BehaviorSubject<T> subject;
+
+    public SettingsProperty(T defaultValue)
+    {
+        subject = new BehaviorSubject<T>(defaultValue);
+    }
+
+    public T Value
+    {
+        get => subject.Value;
+        set => subject.OnNext(value);
+    }
+
+    public IDisposable Subscribe(IObserver<T> observer)
+    {
+        return subject.Subscribe(observer);
+    }
 }

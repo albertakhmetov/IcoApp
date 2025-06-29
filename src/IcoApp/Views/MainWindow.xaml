@@ -24,7 +24,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
-        <TitleBar x:Name="AppTitleBar" Title="IcoApp" Subtitle="{x:Bind IcoViewModel.Name, Mode=OneWay}" Grid.ColumnSpan="2">
+        <TitleBar x:Name="AppTitleBar" Title="{x:Bind AppWindow.Title}" Subtitle="{x:Bind IcoViewModel.Name, Mode=OneWay}" Grid.ColumnSpan="2">
             <TitleBar.LeftHeader>
                 <StackPanel Orientation="Horizontal" Margin="4,0,0,0">
                     <StackPanel.Resources>

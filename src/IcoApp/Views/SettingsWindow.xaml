@@ -26,7 +26,7 @@
                     <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
                     <Setter Property="BorderThickness" Value="1"/>
                     <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
-                    <Setter Property="CornerRadius" Value="8"/>
+                    <Setter Property="CornerRadius" Value="4"/>
                     <Setter Property="Padding" Value="16"/>
                     <Setter Property="Margin" Value="24,12"/>
                 </Style.Setters>
@@ -70,21 +70,27 @@
             Margin="24,12">
             <TextBlock
                 Style="{ThemeResource SubtitleTextBlockStyle}"
-                Margin="4,2">
+                Margin="4">
                 <Run Text="{x:Bind ViewModel.ProductName}"/>
-                <Run Text="{x:Bind ViewModel.ProductVersion}"/>
+                <Run Text="{x:Bind ViewModel.Version}"/>
             </TextBlock>
 
             <TextBlock 
                 Text="{x:Bind ViewModel.LegalCopyright}"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Margin="4,2"/>
+                Margin="4"/>
 
             <TextBlock 
                 Text="{x:Bind ViewModel.ProductDescription}"
                 Style="{ThemeResource BodyTextBlockStyle}"
                 HorizontalAlignment="Stretch"
-                Margin="4,16"/>
+                Margin="4,8"/>
+
+            <TextBlock 
+                Text="{x:Bind ViewModel.ProductVersion}"
+                Style="{ThemeResource BodyTextBlockStyle}"
+                HorizontalAlignment="Stretch"
+                Margin="4,8"/>
 
         </StackPanel>
     </Grid>

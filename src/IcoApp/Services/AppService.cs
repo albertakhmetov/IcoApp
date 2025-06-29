@@ -33,12 +33,15 @@ using IcoApp.Core.ViewModels;
 using IcoApp.Helpers;
 using IcoApp.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 
 internal class AppService : IAppService
 {
     private readonly IServiceProvider serviceProvider;
+
+    private SettingsWindow? settingsWindow;
 
     public AppService(IServiceProvider serviceProvider)
     {
@@ -58,6 +61,19 @@ internal class AppService : IAppService
     public nint Handle => (App.Current as App)?.Handle ?? nint.Zero;
 
     public string UserDataPath { get; } = "./"; // todo: replace to user/local folder
+
+    public async Task ShowSettings()
+    {
+        if (settingsWindow is null)
+        {
+            settingsWindow = serviceProvider.GetRequiredService<SettingsWindow>();
+            settingsWindow.AppWindow.Closing += OnSettingsWindowClosing;
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+        }
+
+        settingsWindow.AppWindow.Show(true);
+    }
 
     public async Task<bool> Show(DialogViewModel viewModel)
     {
@@ -105,7 +121,7 @@ internal class AppService : IAppService
 
     private AppInfo LoadAppInfo()
     {
-        var info = FileVersionInfo.GetVersionInfo(new FileInfo(typeof(AppService).Assembly.Location).FullName);
+        var info = FileVersionInfo.GetVersionInfo(typeof(AppService).Assembly.Location);
 
         return new AppInfo
         {
@@ -121,5 +137,12 @@ internal class AppService : IAppService
 
             IsPreRelease = Regex.IsMatch(info.ProductVersion ?? "", "[a-zA-Z]")
         };
+    }
+
+    private void OnSettingsWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
+    {
+        args.Cancel = true;
+
+        sender.Hide();
     }
 }

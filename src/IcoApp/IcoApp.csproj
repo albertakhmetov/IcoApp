@@ -20,10 +20,12 @@
 	<PropertyGroup>
 		<Copyright>© 2025, Albert Akhmetov</Copyright>
 		<Authors>Albert Akhmetov</Authors>
-		<Product>IcoApp App</Product>
+		<Product>IcoApp</Product>
 		<Version>0.1.0</Version>
+		<Description>A simple icon editor. Create icons from BMP/PNG files or extract images from existing icons.</Description>
 		<PackageIcon></PackageIcon>
 		<PackageIconUrl />
+		<ApplicationIcon>Assets\IcoApp.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -53,6 +55,10 @@
 	<ItemGroup>
 		<Manifest Include="$(ApplicationManifest)" />
 		<PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
 
