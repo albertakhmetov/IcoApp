@@ -42,8 +42,8 @@ public class IcoFramesViewModel : ViewModel, IDisposable
     private readonly IFileService fileService;
     private readonly IAppCommandManager appCommandManager;
 
-    private ItemObservableCollection<IcoFrameViewModel> baseItems;
-    private IcoFrameViewModel? currentItem;
+    private ItemObservableCollection<IcoFramesItemViewModel> baseItems;
+    private IcoFramesItemViewModel? currentItem;
 
     public IcoFramesViewModel(
         IIcoService icoService,
@@ -62,21 +62,21 @@ public class IcoFramesViewModel : ViewModel, IDisposable
         this.appCommandManager = appCommandManager;
 
         baseItems = [];
-        Items = new ReadOnlyObservableCollection<IcoFrameViewModel>(baseItems);
+        Items = new ReadOnlyObservableCollection<IcoFramesItemViewModel>(baseItems);
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
-        RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as IcoFrameViewModel)?.Frame));
+        RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as IcoFramesItemViewModel)?.Frame));
         RemoveAllFramesCommand = new RelayCommand(x => RemoveAllFrames());
-        ExportFrameCommand = new RelayCommand(x => ExportFrame((x as IcoFrameViewModel)?.Frame));
+        ExportFrameCommand = new RelayCommand(x => ExportFrame((x as IcoFramesItemViewModel)?.Frame));
 
         InitSubscriptions();
     }
 
-    public ReadOnlyObservableCollection<IcoFrameViewModel> Items { get; }
+    public ReadOnlyObservableCollection<IcoFramesItemViewModel> Items { get; }
 
     public bool IsEmpty => Items.Count == 0;
 
-    public IcoFrameViewModel? CurrentItem
+    public IcoFramesItemViewModel? CurrentItem
     {
         get => currentItem;
         set => Set(ref currentItem, value);
@@ -169,13 +169,13 @@ public class IcoFramesViewModel : ViewModel, IDisposable
         switch (action.Type)
         {
             case ItemCollectionActionType.Reset:
-                baseItems.Set(action.Items.Select(x => new IcoFrameViewModel(x, ExportFrameCommand, RemoveFrameCommand)));
+                baseItems.Set(action.Items.Select(x => new IcoFramesItemViewModel(x, ExportFrameCommand, RemoveFrameCommand)));
                 break;
 
             case ItemCollectionActionType.Add:
                 action
                     .Items
-                    .Select(x => new IcoFrameViewModel(x, ExportFrameCommand, RemoveFrameCommand))
+                    .Select(x => new IcoFramesItemViewModel(x, ExportFrameCommand, RemoveFrameCommand))
                     .ForEach(x => baseItems.Add(x));
                 break;
 

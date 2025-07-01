@@ -25,9 +25,9 @@ using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 
-public class IcoFrameViewModel : ViewModel, IComparable<IcoFrameViewModel>
+public class IcoFramesItemViewModel : ViewModel, IComparable<IcoFramesItemViewModel>
 {
-    public IcoFrameViewModel(IcoFrame frame, RelayCommand exportCommand, RelayCommand removeCommand)
+    public IcoFramesItemViewModel(IcoFrame frame, RelayCommand exportCommand, RelayCommand removeCommand)
     {
         ArgumentNullException.ThrowIfNull(frame);
         ArgumentNullException.ThrowIfNull(exportCommand);
@@ -51,7 +51,7 @@ public class IcoFrameViewModel : ViewModel, IComparable<IcoFrameViewModel>
 
     public RelayCommand RemoveCommand { get; }
 
-    public int CompareTo(IcoFrameViewModel? other)
+    public int CompareTo(IcoFramesItemViewModel? other)
     {
         if (other == null)
         {

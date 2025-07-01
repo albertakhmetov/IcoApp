@@ -39,6 +39,8 @@ public interface IAppService
 
     string UserDataPath { get; }
 
+    bool IsImageFileSupported(string? fileName);
+
     Task ShowSettings();
 
     Task<bool> Show(DialogViewModel viewModel);

@@ -62,6 +62,13 @@ internal class AppService : IAppService
 
     public string UserDataPath { get; } = "./"; // todo: replace to user/local folder
 
+    public bool IsImageFileSupported(string? fileName)
+    {
+        var ext = Path.GetExtension(fileName);
+
+        return ext is not null && SupportedImageTypes.Any(x => x.Equals(ext));
+    }
+
     public async Task ShowSettings()
     {
         if (settingsWindow is null)

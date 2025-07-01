@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public sealed class FileType
+public sealed class FileType : IEquatable<string>
 {
     public readonly static FileType Png = new FileType { Description = "Portable Network Graphics", Extension = ".png" };
 
@@ -35,4 +35,9 @@ public sealed class FileType
     public required string Description { get; init; }
 
     public required string Extension { get; init; }
+
+    public bool Equals(string? otherExtension)
+    {
+        return string.Equals(Extension, otherExtension, StringComparison.InvariantCultureIgnoreCase);
+    }
 }

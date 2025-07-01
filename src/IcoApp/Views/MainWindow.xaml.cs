@@ -18,11 +18,13 @@
  */
 namespace IcoApp.Views;
 
+using System.Collections.Immutable;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using IcoApp.Core;
+using IcoApp.Core.Commands;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
@@ -33,18 +35,23 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 using WinRT.Interop;
 
 public partial class MainWindow : Window
 {
     private readonly CompositeDisposable disposable = [];
+    private readonly IAppService appService;
     private readonly ISettingsService settingsService;
     private readonly ISystemEventsService systemEventsService;
+    private readonly IAppCommandManager appCommandManager;
 
     public MainWindow(
         IAppService appService,
         ISettingsService settingsService,
         ISystemEventsService systemEventsService,
+        IAppCommandManager appCommandManager,
         IcoViewModel icoViewModel,
         IcoFramesViewModel icoFramesViewModel,
         URViewModel urViewModel)
@@ -52,9 +59,12 @@ public partial class MainWindow : Window
         ArgumentNullException.ThrowIfNull(appService);
         ArgumentNullException.ThrowIfNull(settingsService);
         ArgumentNullException.ThrowIfNull(systemEventsService);
+        ArgumentNullException.ThrowIfNull(appCommandManager);
 
+        this.appService = appService;
         this.settingsService = settingsService;
         this.systemEventsService = systemEventsService;
+        this.appCommandManager = appCommandManager;
 
         IcoViewModel = icoViewModel;
         IcoFramesViewModel = icoFramesViewModel;
@@ -94,7 +104,7 @@ public partial class MainWindow : Window
 
         Observable
             .CombineLatest(
-                settingsService.WindowTheme, 
+                settingsService.WindowTheme,
                 systemEventsService.AppDarkTheme,
                 (theme, isSystemDark) => theme == WindowTheme.Dark || theme == WindowTheme.System && isSystemDark)
             .DistinctUntilChanged()
@@ -121,8 +131,57 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Button_Click(object sender, RoutedEventArgs e)
+    private async void OnDragOver(object sender, DragEventArgs e)
     {
+        var def = e.GetDeferral();
 
+        try
+        {
+            var items = await e.DataView.GetStorageItemsAsync();
+            var acceptedCount = items
+                .Select(x => (x as StorageFile)?.Path)
+                .Count(x => appService?.IsImageFileSupported(x) == true);
+
+            if (acceptedCount > 0)
+            {
+                e.AcceptedOperation = DataPackageOperation.Link;
+                e.DragUIOverride.Caption = acceptedCount == 1 ? "Add Frame" : "Add Frames";
+                e.DragUIOverride.IsCaptionVisible = true;
+                e.DragUIOverride.IsGlyphVisible = false;
+            }
+            else
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+            }
+        }
+        finally
+        {
+            def.Complete();
+        }
+    }
+
+    private async void OnDrop(object sender, DragEventArgs e)
+    {
+        var parameters = new IcoFrameAddCommand.Parameters
+        {
+            FileNames = await GetDroppedFiles(e.DataView)
+        };
+
+        await appCommandManager.ExecuteAsync(parameters);
+    }
+
+    private async Task<IImmutableList<string>> GetDroppedFiles(DataPackageView dataView)
+    {
+        if (dataView.Contains(StandardDataFormats.StorageItems))
+        {
+            var items = await dataView.GetStorageItemsAsync();
+
+            return items
+                .Select(x => (x as StorageFile)?.Path)
+                .Where(x => appService?.IsImageFileSupported(x) == true)
+                .ToImmutableArray();
+        }
+
+        return ImmutableArray<string>.Empty;
     }
 }

@@ -72,7 +72,8 @@
             </TitleBar.LeftHeader>
         </TitleBar>
 
-        <Border
+        <Border 
+            AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop"
             Grid.Row="1"
             Margin="8,0,8,8"
             MinWidth="160" 
@@ -116,7 +117,7 @@
                     SelectedItem="{x:Bind IcoFramesViewModel.CurrentItem, Mode=TwoWay}">
 
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="vm:IcoFrameViewModel">
+                        <DataTemplate x:DataType="vm:IcoFramesItemViewModel">
                             <Grid 
                                 Height="80"
                                 Background="#01FFFFFF">
