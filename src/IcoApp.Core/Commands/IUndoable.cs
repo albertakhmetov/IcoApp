@@ -26,6 +26,12 @@ using System.Threading.Tasks;
 
 public interface IUndoable
 {
+    bool IsExecuted { get; }
+
+    bool CanUndo { get; }
+
+    bool CanRedo { get; }
+
     Task Undo();
 
     Task Redo();

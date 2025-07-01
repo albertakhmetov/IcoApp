@@ -42,7 +42,7 @@
                         <FontIcon Glyph="&#xE838;" />
                     </Button>
                     
-                    <Button Command="{x:Bind IcoViewModel.SaveFileCommand}">
+                    <Button Command="{x:Bind IcoViewModel.SaveFileCommand}" IsEnabled="{x:Bind IcoViewModel.IsModified, Mode=OneWay}">
                         <FontIcon Glyph="&#xE74E;" />
                     </Button>
 
@@ -102,9 +102,10 @@
                     </Button>
                     
                     <Button
+                        IsEnabled="{x:Bind h:Converters.Not(IcoFramesViewModel.IsEmpty), Mode=OneWay}"
                         Margin="4"
                         Command="{x:Bind IcoFramesViewModel.RemoveAllFramesCommand}">
-                        
+
                         <FontIcon Glyph="&#xE74D;" />
                     </Button>
                 </StackPanel>

@@ -34,6 +34,7 @@
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<LangVersion>13</LangVersion>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	</PropertyGroup>
 
 	<PropertyGroup>

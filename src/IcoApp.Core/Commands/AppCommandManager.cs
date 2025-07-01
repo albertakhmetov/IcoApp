@@ -60,14 +60,13 @@ public class AppCommandManager : IAppCommandManager
 
         await command.ExecuteAsync(parameters);
 
-        if (command is IUndoable undoableCommand)
+        if (command is IUndoable undoableCommand && undoableCommand.IsExecuted)
         {
             undoHistory.Push(undoableCommand);
+            redoHistory.Clear();
 
             IncreaseExecutedCount();
         }
-
-        redoHistory.Clear();
     }
 
     public void ClearHistory()

@@ -53,7 +53,7 @@ public class IcoFrameRemoveCommand : UndoableAppCommand<IcoFrameRemoveCommand.Pa
 
     protected override Task<bool> ExecuteAsync(Parameters parameters)
     {
-        if (parameters.Frames.Count == 0 && parameters.RemoveAll is false)
+        if (parameters.Frames.Count == 0)
         {
             return Task.FromResult(false);
         }
@@ -64,8 +64,14 @@ public class IcoFrameRemoveCommand : UndoableAppCommand<IcoFrameRemoveCommand.Pa
         }
         else
         {
-            parameters.Frames.ForEach(x => icoService.Frames.Remove(x));
-            frames = parameters.Frames;
+            var removedFrames = parameters.Frames.ForEach(x => icoService.Frames.Remove(x));
+
+            if (removedFrames.Any() is false)
+            {
+                return Task.FromResult(false);
+            }
+
+            frames = removedFrames.ToImmutableArray();
         }
 
         return Task.FromResult(true);

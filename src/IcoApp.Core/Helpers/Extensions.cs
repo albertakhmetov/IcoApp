@@ -42,6 +42,21 @@ public static class Extensions
         }
     }
 
+    public static IList<T> ForEach<T>(this IEnumerable<T> enumerable, Func<T, bool> action)
+    {
+        var executedItems = new List<T>();
+
+        foreach (var i in enumerable ?? [])
+        {
+            if (action?.Invoke(i) == true)
+            {
+                executedItems.Add(i);
+            }
+        }
+
+        return executedItems;
+    }
+
     public static int ToInt32(this long value)
     {
         return Convert.ToInt32(value);
