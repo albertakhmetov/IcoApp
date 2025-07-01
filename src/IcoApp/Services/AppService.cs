@@ -49,6 +49,8 @@ internal class AppService : IAppService
 
         this.serviceProvider = serviceProvider;
 
+        UserDataPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName)!;
+
         AppInfo = LoadAppInfo();
     }
 
@@ -60,7 +62,7 @@ internal class AppService : IAppService
 
     public nint Handle => (App.Current as App)?.Handle ?? nint.Zero;
 
-    public string UserDataPath { get; } = "./"; // todo: replace to user/local folder
+    public string UserDataPath { get; }
 
     public bool IsImageFileSupported(string? fileName)
     {

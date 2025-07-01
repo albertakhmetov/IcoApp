@@ -20,6 +20,7 @@ namespace IcoApp;
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
@@ -97,11 +98,15 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-
         mainWindow = host.Services.GetRequiredService<MainWindow>();
         mainWindow.AppWindow.Show();
 
         _ = host.RunAsync();
+
+        if (arguments.IsEmpty is false)
+        {
+            host.Services.GetRequiredService<IIcoService>().Load(arguments.First());
+        }
     }
 
     private IHost CreateHost()
