@@ -31,6 +31,7 @@ using IcoApp.Core.Services;
 using IcoApp.Core.ViewModels;
 using IcoApp.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -76,8 +77,12 @@ public partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
 
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-        AppWindow.SetIcon("Assets/IcoApp.ico");
         AppWindow.Title = appService.AppInfo.ProductName;
+
+        var icon = System.Drawing.Icon
+            .ExtractAssociatedIcon(appService.ApplicationPath)!
+            .DisposeWith(disposable);
+        AppWindow.SetIcon(Win32Interop.GetIconIdFromIcon(icon.Handle));
 
         SetTitleBar(AppTitleBar);
 

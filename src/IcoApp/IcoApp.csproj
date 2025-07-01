@@ -25,7 +25,7 @@
 		<Description>A simple icon editor. Create icons from BMP/PNG files or extract images from existing icons.</Description>
 		<PackageIcon></PackageIcon>
 		<PackageIconUrl />
-		<ApplicationIcon>Assets\IcoApp.ico</ApplicationIcon>
+		<ApplicationIcon>Assets\app.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<PropertyGroup>

@@ -47,9 +47,16 @@ internal class AppService : IAppService
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
+        var processModule = Process.GetCurrentProcess().MainModule;
+        if (processModule is null)
+        {
+            throw new InvalidOperationException("Process.GetCurrentProcess().MainModule is null");
+        }
+
         this.serviceProvider = serviceProvider;
 
-        UserDataPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName)!;
+        ApplicationPath = processModule.FileName;
+        UserDataPath = Path.GetDirectoryName(ApplicationPath)!;
 
         AppInfo = LoadAppInfo();
     }
@@ -61,6 +68,8 @@ internal class AppService : IAppService
     public IImmutableList<FileType> SupportedFileTypes { get; } = [FileType.Ico];
 
     public nint Handle => (App.Current as App)?.Handle ?? nint.Zero;
+
+    public string ApplicationPath { get; }
 
     public string UserDataPath { get; }
 

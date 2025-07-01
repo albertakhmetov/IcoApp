@@ -37,6 +37,8 @@ public interface IAppService
 
     nint Handle { get; }
 
+    string ApplicationPath { get; }
+
     string UserDataPath { get; }
 
     bool IsImageFileSupported(string? fileName);
