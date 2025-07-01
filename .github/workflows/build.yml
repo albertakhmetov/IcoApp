@@ -34,7 +34,7 @@ jobs:
 
       - name: Create ZIP archive
         run: |
-          $artifactName = Join-Path -Path $pwd -ChildPath "${{ env.ARTIFACT_NAME }}_${{ github.ref_name }}.zip"
+          $artifactName = "${{ env.ARTIFACT_NAME }}_${{ github.ref_name }}.zip"
           Compress-Archive -Path ${{ env.OUTPUT_DIR }}/* -DestinationPath $artifactName -Force
           echo "artifact_name=$artifactName" >> $env:GITHUB_ENV
 
