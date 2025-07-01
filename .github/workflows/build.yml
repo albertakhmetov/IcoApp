@@ -8,7 +8,7 @@ on:
 env:
   DOTNET_VERSION: '9.0.x'
   CONFIGURATION: Release
-  OUTPUT_DIR: Output
+  OUTPUT_DIR: Output/IcoApp
   ARTIFACT_NAME: IcoApp
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
       - name: Create ZIP archive
         run: |
           $artifactName = "${{ env.ARTIFACT_NAME }}_${{ github.ref_name }}.zip"
-          Compress-Archive -Path ${{ env.OUTPUT_DIR }}/* -DestinationPath $artifactName -Force
+          Compress-Archive -Path ${{ env.OUTPUT_DIR }} -DestinationPath $artifactName -Force
           echo "artifact_name=$artifactName" >> $env:GITHUB_ENV
 
       - name: Upload artifact
