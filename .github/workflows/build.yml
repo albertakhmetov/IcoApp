@@ -41,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}-${{ github.ref_name }}
+          name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.artifact_name }}
 
       - name: Create draft release
