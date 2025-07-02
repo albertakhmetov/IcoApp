@@ -16,28 +16,10 @@
  *  along with IcoApp. If not, see <https://www.gnu.org/licenses/>.   
  *
  */
-namespace IcoApp.Core.Services;
+namespace IcoApp.Core.Models;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IcoApp.Core.Models;
-
-public interface IIcoService
+public enum FrameType
 {
-    IObservable<bool> Modified { get; }
-
-    IObservable<string?> FileName { get; }
-
-    ItemCollectionBase<IcoFrame> Frames { get; }
-
-    Task CreateNew();
-
-    Task Load(string fileName);
-
-    Task Save();
-
-    Task SaveAs(string fileName);
+    Bitmap,
+    Png,
 }

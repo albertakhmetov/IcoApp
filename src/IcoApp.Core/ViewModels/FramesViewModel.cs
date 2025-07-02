@@ -33,50 +33,50 @@ using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using Microsoft.Extensions.Hosting;
 
-public class IcoFramesViewModel : ViewModel, IDisposable
+public class FramesViewModel : ViewModel, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
 
-    private readonly IIcoService icoService;
+    private readonly IIcoFileService icoFileService;
     private readonly IAppService appService;
     private readonly IFileService fileService;
     private readonly IAppCommandManager appCommandManager;
 
-    private ItemObservableCollection<IcoFramesItemViewModel> baseItems;
-    private IcoFramesItemViewModel? currentItem;
+    private ItemObservableCollection<FramesItemViewModel> baseItems;
+    private FramesItemViewModel? currentItem;
 
-    public IcoFramesViewModel(
-        IIcoService icoService,
+    public FramesViewModel(
+        IIcoFileService icoFileService,
         IAppService appService,
         IFileService fileService,
         IAppCommandManager appCommandManager)
     {
-        ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(icoFileService);
         ArgumentNullException.ThrowIfNull(appService);
         ArgumentNullException.ThrowIfNull(fileService);
         ArgumentNullException.ThrowIfNull(appCommandManager);
 
-        this.icoService = icoService;
+        this.icoFileService = icoFileService;
         this.appService = appService;
         this.fileService = fileService;
         this.appCommandManager = appCommandManager;
 
         baseItems = [];
-        Items = new ReadOnlyObservableCollection<IcoFramesItemViewModel>(baseItems);
+        Items = new ReadOnlyObservableCollection<FramesItemViewModel>(baseItems);
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
-        RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as IcoFramesItemViewModel)?.Frame));
+        RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as FramesItemViewModel)?.Frame));
         RemoveAllFramesCommand = new RelayCommand(x => RemoveAllFrames());
-        ExportFrameCommand = new RelayCommand(x => ExportFrame((x as IcoFramesItemViewModel)?.Frame));
+        ExportFrameCommand = new RelayCommand(x => ExportFrame((x as FramesItemViewModel)?.Frame));
 
         InitSubscriptions();
     }
 
-    public ReadOnlyObservableCollection<IcoFramesItemViewModel> Items { get; }
+    public ReadOnlyObservableCollection<FramesItemViewModel> Items { get; }
 
     public bool IsEmpty => Items.Count == 0;
 
-    public IcoFramesItemViewModel? CurrentItem
+    public FramesItemViewModel? CurrentItem
     {
         get => currentItem;
         set => Set(ref currentItem, value);
@@ -89,8 +89,6 @@ public class IcoFramesViewModel : ViewModel, IDisposable
     public RelayCommand RemoveAllFramesCommand { get; }
 
     public RelayCommand ExportFrameCommand { get; }
-
-    public RelayCommand EditFrameCommand { get; }
 
     public void Dispose()
     {
@@ -107,25 +105,25 @@ public class IcoFramesViewModel : ViewModel, IDisposable
             throw new InvalidOperationException("SynchronizationContext.Current can't be null");
         }
 
-        icoService
+        icoFileService
             .Frames
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(UpdateItems)
             .DisposeWith(disposable);
     }
 
-    private void UpdateItems(ItemCollectionAction<IcoFrame> action)
+    private void UpdateItems(ItemCollectionAction<Frame> action)
     {
         switch (action.Type)
         {
             case ItemCollectionActionType.Reset:
-                baseItems.Set(action.Items.Select(x => new IcoFramesItemViewModel(x, this)));
+                baseItems.Set(action.Items.Select(x => new FramesItemViewModel(x, this)));
                 break;
 
             case ItemCollectionActionType.Add:
                 action
                     .Items
-                    .Select(x => new IcoFramesItemViewModel(x, this))
+                    .Select(x => new FramesItemViewModel(x, this))
                     .ForEach(x => baseItems.Add(x));
                 break;
 
@@ -148,18 +146,18 @@ public class IcoFramesViewModel : ViewModel, IDisposable
         var fileNames = await fileService.PickFilesForOpenAsync(appService.SupportedImageTypes);
         if (fileNames.Count > 0)
         {
-            await appCommandManager.ExecuteAsync(new IcoFrameAddCommand.Parameters
+            await appCommandManager.ExecuteAsync(new FrameAddCommand.Parameters
             {
                 FileNames = fileNames.ToImmutableArray()
             });
         }
     }
 
-    private async void RemoveFrame(IcoFrame? frame)
+    private async void RemoveFrame(Frame? frame)
     {
         if (frame is not null)
         {
-            await appCommandManager.ExecuteAsync(new IcoFrameRemoveCommand.Parameters
+            await appCommandManager.ExecuteAsync(new FrameRemoveCommand.Parameters
             {
                 Frames = ImmutableArray.Create([frame])
             });
@@ -168,20 +166,20 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
     private async void RemoveAllFrames()
     {
-        await appCommandManager.ExecuteAsync(new IcoFrameRemoveCommand.Parameters
+        await appCommandManager.ExecuteAsync(new FrameRemoveCommand.Parameters
         {
             RemoveAll = true
         });
     }
 
-    private async void ExportFrame(IcoFrame? frame)
+    private async void ExportFrame(Frame? frame)
     {
         if (frame == null)
         {
             return;
         }
 
-        var fileType = frame.Type == IcoFrameType.Bitmap ? FileType.Bmp : FileType.Png;
+        var fileType = frame.Type == FrameType.Bitmap ? FileType.Bmp : FileType.Png;
 
         var fileName = await fileService.PickFileForSaveAsync([fileType], $"frame{fileType.Extension}");
 

@@ -39,7 +39,7 @@ static class Converters
 
     public static bool Or(bool a, bool b) => a || b;
 
-    public static ImageData? GetIcoFrameImage(IcoFramesItemViewModel? viewModel)
+    public static ImageData? GetFrameImage(FramesItemViewModel? viewModel)
     {
         return viewModel?.Frame?.Image;
     }

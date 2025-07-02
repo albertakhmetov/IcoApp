@@ -25,9 +25,9 @@ using System.Text;
 using System.Threading.Tasks;
 using IcoApp.Core.Models;
 
-public class IcoFramesItemViewModel : ViewModel, IComparable<IcoFramesItemViewModel>
+public class FramesItemViewModel : ViewModel, IComparable<FramesItemViewModel>
 {
-    public IcoFramesItemViewModel(IcoFrame frame, IcoFramesViewModel framesViewModel)
+    public FramesItemViewModel(Frame frame, FramesViewModel framesViewModel)
     {
         ArgumentNullException.ThrowIfNull(frame);
         ArgumentNullException.ThrowIfNull(framesViewModel);
@@ -37,10 +37,10 @@ public class IcoFramesItemViewModel : ViewModel, IComparable<IcoFramesItemViewMo
         RemoveCommand = framesViewModel.RemoveFrameCommand;
 
         Text = $"{Frame.Width}x{Frame.Height}";
-        Description = Frame.Type == IcoFrameType.Png? "PNG": $"{Frame.BitCount} bit";
+        Description = Frame.Type == FrameType.Png? "PNG": $"{Frame.BitCount} bit";
     }
 
-    public IcoFrame Frame { get; }
+    public Frame Frame { get; }
 
     public string Text { get; }
 
@@ -50,7 +50,7 @@ public class IcoFramesItemViewModel : ViewModel, IComparable<IcoFramesItemViewMo
 
     public RelayCommand RemoveCommand { get; }
 
-    public int CompareTo(IcoFramesItemViewModel? other)
+    public int CompareTo(FramesItemViewModel? other)
     {
         if (other == null)
         {

@@ -105,7 +105,7 @@ public partial class App : Application
 
         if (arguments.IsEmpty is false)
         {
-            host.Services.GetRequiredService<IIcoService>().Load(arguments.First());
+            host.Services.GetRequiredService<IIcoFileService>().Load(arguments.First());
         }
     }
 
@@ -118,20 +118,20 @@ public partial class App : Application
 
         builder.Services.AddSingleton<IAppService, AppService>();
         builder.Services.AddSingleton<IFileService, FileService>();
-        builder.Services.AddSingleton<IIcoService, IcoService>();
+        builder.Services.AddSingleton<IIcoFileService, IcoFileService>();
         builder.Services.AddSingleton<ISettingsService, SettingsService>();
         builder.Services.AddSingleton<ISystemEventsService, SystemEventsService>();
 
         builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
         builder.Services
-            .AddTransient<IAppCommand<IcoFrameAddCommand.Parameters>, IcoFrameAddCommand>();
+            .AddTransient<IAppCommand<FrameAddCommand.Parameters>, FrameAddCommand>();
         builder.Services
-            .AddTransient<IAppCommand<IcoFrameRemoveCommand.Parameters>, IcoFrameRemoveCommand>();
+            .AddTransient<IAppCommand<FrameRemoveCommand.Parameters>, FrameRemoveCommand>();
         builder.Services
             .AddTransient<IAppCommand<ImageDataExportCommand.Parameters>, ImageDataExportCommand>();
 
-        builder.Services.AddSingleton<IcoViewModel>();
-        builder.Services.AddSingleton<IcoFramesViewModel>();
+        builder.Services.AddSingleton<IcoFileViewModel>();
+        builder.Services.AddSingleton<FramesViewModel>();
         builder.Services.AddSingleton<URViewModel>();
         builder.Services.AddSingleton<SettingsViewModel>();
 

@@ -20,9 +20,9 @@ using System.Collections.Immutable;
 
 namespace IcoApp.Core.Models;
 
-public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
+public sealed class Frame : IComparable<Frame>, IDisposable
 {
-    public IcoFrame(int width, int height, Stream? sourceStream)
+    public Frame(int width, int height, Stream? sourceStream)
     {
         Width = width;
         Height = height;
@@ -30,10 +30,10 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
 
         OriginalImage = new ImageData(sourceStream);
         Image = OriginalImage;
-        Type = IcoFrameType.Png;
+        Type = FrameType.Png;
     }
 
-    public IcoFrame(int width, int height, int bitCount, Stream? sourceStream, Stream? imageStream)
+    public Frame(int width, int height, int bitCount, Stream? sourceStream, Stream? imageStream)
     {
         Width = width;
         Height = height;
@@ -41,7 +41,7 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
 
         OriginalImage = new ImageData(sourceStream);
         Image = new ImageData(imageStream);
-        Type = IcoFrameType.Bitmap;
+        Type = FrameType.Bitmap;
     }
 
     public bool IsDisposed { get; private set; } = false;
@@ -52,7 +52,7 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
 
     public int BitCount { get; }
 
-    public IcoFrameType Type { get; }
+    public FrameType Type { get; }
 
     public ImageData Image { get; }
 
@@ -60,7 +60,7 @@ public sealed class IcoFrame : IComparable<IcoFrame>, IDisposable
 
     public ImageData? MaskImage { get; init; }
 
-    public int CompareTo(IcoFrame? other)
+    public int CompareTo(Frame? other)
     {
         if (other == null)
         {

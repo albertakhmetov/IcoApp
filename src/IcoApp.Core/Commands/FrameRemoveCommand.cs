@@ -30,17 +30,17 @@ using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 
-public class IcoFrameRemoveCommand : UndoableAppCommand<IcoFrameRemoveCommand.Parameters>, IDisposable
+public class FrameRemoveCommand : UndoableAppCommand<FrameRemoveCommand.Parameters>, IDisposable
 {
-    private readonly IIcoService icoService;
+    private readonly IIcoFileService icoFileService;
 
-    private IImmutableList<IcoFrame>? frames;
+    private IImmutableList<Frame>? frames;
 
-    public IcoFrameRemoveCommand(IIcoService icoService)
+    public FrameRemoveCommand(IIcoFileService icoFileService)
     {
-        ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(icoFileService);
 
-        this.icoService = icoService;
+        this.icoFileService = icoFileService;
     }
 
     void IDisposable.Dispose()
@@ -59,8 +59,8 @@ public class IcoFrameRemoveCommand : UndoableAppCommand<IcoFrameRemoveCommand.Pa
         }
 
         var removedFrames = parameters.RemoveAll
-            ? frames = icoService.Frames.RemoveAll()
-            : parameters.Frames.ForEach(x => icoService.Frames.Remove(x)).ToImmutableArray();
+            ? frames = icoFileService.Frames.RemoveAll()
+            : parameters.Frames.ForEach(x => icoFileService.Frames.Remove(x)).ToImmutableArray();
 
         if (removedFrames.Any() is false)
         {
@@ -74,18 +74,18 @@ public class IcoFrameRemoveCommand : UndoableAppCommand<IcoFrameRemoveCommand.Pa
 
     protected override async Task Undo()
     {
-        await icoService.Frames.AddAsync(frames ?? []);
+        await icoFileService.Frames.AddAsync(frames ?? []);
     }
 
     protected override Task Redo()
     {
-        frames?.ForEach(x => icoService.Frames.Remove(x));
+        frames?.ForEach(x => icoFileService.Frames.Remove(x));
         return Task.CompletedTask;
     }
 
     public sealed class Parameters
     {
-        public IImmutableList<IcoFrame> Frames { get; init; } = [];
+        public IImmutableList<Frame> Frames { get; init; } = [];
 
         public bool RemoveAll { get; init; } = false;
     }

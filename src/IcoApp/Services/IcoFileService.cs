@@ -33,7 +33,7 @@ using IcoApp.Core.Services;
 using IcoApp.FileFormat;
 using IcoApp.FileFormat.Internal;
 
-internal class IcoService : IIcoService, IDisposable
+internal class IcoFileService : IIcoFileService, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
     private readonly IAppCommandManager appCommandManager;
@@ -43,7 +43,7 @@ internal class IcoService : IIcoService, IDisposable
 
     private int savedExecutedCount = 0;
 
-    public IcoService(IAppCommandManager appCommandManager)
+    public IcoFileService(IAppCommandManager appCommandManager)
     {
         ArgumentNullException.ThrowIfNull(appCommandManager);
 
@@ -52,7 +52,7 @@ internal class IcoService : IIcoService, IDisposable
         modifiedSubject = new BehaviorSubject<bool>(false);
         fileNameSubject = new BehaviorSubject<string?>(null);
 
-        Frames = new ItemCollection<IcoFrame>();
+        Frames = new ItemCollection<Frame>();
 
         Modified = modifiedSubject.DistinctUntilChanged().Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
         FileName = fileNameSubject.Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
@@ -64,7 +64,7 @@ internal class IcoService : IIcoService, IDisposable
 
     public IObservable<string?> FileName { get; }
 
-    public ItemCollectionBase<IcoFrame> Frames { get; }
+    public ItemCollectionBase<Frame> Frames { get; }
 
     public Task CreateNew()
     {
@@ -97,7 +97,7 @@ internal class IcoService : IIcoService, IDisposable
         modifiedSubject.OnNext(false);
     }
 
-    private IcoFrame CreateFrame(IIcoFileFrame frame)
+    private Frame CreateFrame(IIcoFileFrame frame)
     {
         using var imageStream = new MemoryStream(frame.ImageData.ToArray());
 
@@ -106,14 +106,14 @@ internal class IcoService : IIcoService, IDisposable
             using var originalImageStream = new MemoryStream(bitmap.OriginalImageData.ToArray());
             using var maskStream = new MemoryStream(bitmap.ImageData.ToArray());
 
-            return new IcoFrame(frame.Width, frame.Height, bitmap.BitCount, originalImageStream, imageStream)
+            return new Frame(frame.Width, frame.Height, bitmap.BitCount, originalImageStream, imageStream)
             {
                 MaskImage = new ImageData(maskStream)
             };
         }
         else
         {
-            return new IcoFrame(frame.Width, frame.Height, imageStream);
+            return new Frame(frame.Width, frame.Height, imageStream);
         }
     }
 
@@ -135,9 +135,9 @@ internal class IcoService : IIcoService, IDisposable
         modifiedSubject.OnNext(false);
     }
 
-    private IIcoFileFrame CreateFrame(IcoFrame frame)
+    private IIcoFileFrame CreateFrame(Frame frame)
     {
-        if (frame.Type == IcoFrameType.Bitmap)
+        if (frame.Type == FrameType.Bitmap)
         {
             using var imageStream = frame.OriginalImage.GetStream();
             using var maskStream = frame.MaskImage?.GetStream();

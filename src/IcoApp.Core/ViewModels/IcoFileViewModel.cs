@@ -28,24 +28,24 @@ using System.Threading.Tasks;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Services;
 
-public class IcoViewModel : ViewModel, IDisposable
+public class IcoFileViewModel : ViewModel, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
 
-    private readonly IIcoService icoService;
+    private readonly IIcoFileService icoFileService;
     private readonly IFileService fileService;
     private readonly IAppService appService;
 
     private string? fileName;
     private bool isModified;
 
-    public IcoViewModel(IIcoService icoService, IFileService fileService, IAppService appService)
+    public IcoFileViewModel(IIcoFileService icoFileService, IFileService fileService, IAppService appService)
     {
-        ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(icoFileService);
         ArgumentNullException.ThrowIfNull(fileService);
         ArgumentNullException.ThrowIfNull(appService);
 
-        this.icoService = icoService;
+        this.icoFileService = icoFileService;
         this.fileService = fileService;
         this.appService = appService;
 
@@ -91,7 +91,7 @@ public class IcoViewModel : ViewModel, IDisposable
 
     public async Task<bool> ConfirmChanges()
     {
-        if (await icoService.Modified.FirstAsync() is true)
+        if (await icoFileService.Modified.FirstAsync() is true)
         {
             var isConfirmed = await appService.Show(new ConfirmationDialogViewModel
             {
@@ -116,21 +116,21 @@ public class IcoViewModel : ViewModel, IDisposable
             throw new InvalidOperationException("SynchronizationContext.Current can't be null");
         }
 
-        icoService
+        icoFileService
             .Modified
-            .CombineLatest(icoService.FileName)
+            .CombineLatest(icoFileService.FileName)
             .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(_ => Invalidate(nameof(Name)))
             .DisposeWith(disposable);
 
-        icoService
+        icoFileService
             .Modified
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => IsModified = x)
             .DisposeWith(disposable);
 
-        icoService
+        icoFileService
             .FileName
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => FileName = x)
@@ -144,7 +144,7 @@ public class IcoViewModel : ViewModel, IDisposable
             return;
         }
 
-        await icoService.CreateNew();
+        await icoFileService.CreateNew();
     }
 
     private async void OpenFile()
@@ -158,7 +158,7 @@ public class IcoViewModel : ViewModel, IDisposable
 
         if (string.IsNullOrEmpty(fileName) is false)
         {
-            await icoService.Load(fileName);
+            await icoFileService.Load(fileName);
         }
     }
 
@@ -166,7 +166,7 @@ public class IcoViewModel : ViewModel, IDisposable
     {
         if (string.IsNullOrEmpty(FileName) is false)
         {
-            await icoService.Save();
+            await icoFileService.Save();
         }
         else
         {
@@ -174,7 +174,7 @@ public class IcoViewModel : ViewModel, IDisposable
 
             if (string.IsNullOrEmpty(fileName) is false)
             {
-                await icoService.SaveAs(fileName);
+                await icoFileService.SaveAs(fileName);
             }
         }
     }

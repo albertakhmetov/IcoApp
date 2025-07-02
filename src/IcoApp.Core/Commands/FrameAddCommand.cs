@@ -30,17 +30,17 @@ using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 
-public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Parameters>, IDisposable
+public class FrameAddCommand : UndoableAppCommand<FrameAddCommand.Parameters>, IDisposable
 {
-    private readonly IIcoService icoService;
+    private readonly IIcoFileService icoFileService;
 
-    private IImmutableList<IcoFrame>? frames;
+    private IImmutableList<Frame>? frames;
 
-    public IcoFrameAddCommand(IIcoService icoService)
+    public FrameAddCommand(IIcoFileService icoFileService)
     {
-        ArgumentNullException.ThrowIfNull(icoService);
+        ArgumentNullException.ThrowIfNull(icoFileService);
 
-        this.icoService = icoService;
+        this.icoFileService = icoFileService;
     }
 
     void IDisposable.Dispose()
@@ -58,15 +58,15 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
             return false;
         }
 
-        var frames = new List<IcoFrame>();
+        var frames = new List<Frame>();
         foreach (var fileName in parameters.FileNames)
         {
             var dataStream = LoadImageData(fileName);
 
-            frames.Add(CreateIcoFrame(dataStream));
+            frames.Add(CreateFrame(dataStream));
         }
 
-        await icoService.Frames.AddAsync(frames);
+        await icoFileService.Frames.AddAsync(frames);
 
         this.frames = frames.ToImmutableArray();
 
@@ -84,14 +84,14 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
         return dataStream;
     }
 
-    private static IcoFrame CreateIcoFrame(MemoryStream dataStream)
+    private static Frame CreateFrame(MemoryStream dataStream)
     {
         using var image = Image.FromStream(dataStream);
 
         if (image.RawFormat.Equals(ImageFormat.Png))
         {
             dataStream.Position = 0;
-            return new IcoFrame(image.Width, image.Height, dataStream);
+            return new Frame(image.Width, image.Height, dataStream);
         }
         else
         {
@@ -103,11 +103,11 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
             if (image.RawFormat.Equals(ImageFormat.Bmp) && TryGetBitCount(image.PixelFormat, out var bitCount))
             {
                 dataStream.Position = 0;
-                return new IcoFrame(image.Width, image.Height, bitCount, dataStream, imageStream);
+                return new Frame(image.Width, image.Height, bitCount, dataStream, imageStream);
             }
             else
             {
-                return new IcoFrame(image.Width, image.Height, imageStream);
+                return new Frame(image.Width, image.Height, imageStream);
             }
         }
     }
@@ -129,14 +129,14 @@ public class IcoFrameAddCommand : UndoableAppCommand<IcoFrameAddCommand.Paramete
 
     protected override Task Undo()
     {
-        frames?.ForEach(x => icoService.Frames.Remove(x));
+        frames?.ForEach(x => icoFileService.Frames.Remove(x));
 
         return Task.CompletedTask;
     }
 
     protected override async Task Redo()
     {
-        await icoService.Frames.AddAsync(frames ?? []);
+        await icoFileService.Frames.AddAsync(frames ?? []);
     }
 
     public sealed class Parameters

@@ -53,8 +53,8 @@ public partial class MainWindow : Window
         ISettingsService settingsService,
         ISystemEventsService systemEventsService,
         IAppCommandManager appCommandManager,
-        IcoViewModel icoViewModel,
-        IcoFramesViewModel icoFramesViewModel,
+        IcoFileViewModel icoFileViewModel,
+        FramesViewModel framesViewModel,
         URViewModel urViewModel)
     {
         ArgumentNullException.ThrowIfNull(appService);
@@ -67,8 +67,8 @@ public partial class MainWindow : Window
         this.systemEventsService = systemEventsService;
         this.appCommandManager = appCommandManager;
 
-        IcoViewModel = icoViewModel;
-        IcoFramesViewModel = icoFramesViewModel;
+        IcoFileViewModel = icoFileViewModel;
+        FramesViewModel = framesViewModel;
         URViewModel = urViewModel;
         SettingsCommand = new RelayCommand(_ => appService.ShowSettings());
 
@@ -92,9 +92,9 @@ public partial class MainWindow : Window
         InitSubscriptions();
     }
 
-    public IcoViewModel IcoViewModel { get; }
+    public IcoFileViewModel IcoFileViewModel { get; }
 
-    public IcoFramesViewModel IcoFramesViewModel { get; }
+    public FramesViewModel FramesViewModel { get; }
 
     public URViewModel URViewModel { get; }
 
@@ -122,7 +122,7 @@ public partial class MainWindow : Window
     {
         args.Cancel = true;
 
-        if (await IcoViewModel.ConfirmChanges() is true)
+        if (await IcoFileViewModel.ConfirmChanges() is true)
         {
             App.Current.Exit();
         }
@@ -167,7 +167,7 @@ public partial class MainWindow : Window
 
     private async void OnDrop(object sender, DragEventArgs e)
     {
-        var parameters = new IcoFrameAddCommand.Parameters
+        var parameters = new FrameAddCommand.Parameters
         {
             FileNames = await GetDroppedFiles(e.DataView)
         };
