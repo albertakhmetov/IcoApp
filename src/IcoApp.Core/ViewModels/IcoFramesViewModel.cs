@@ -90,6 +90,59 @@ public class IcoFramesViewModel : ViewModel, IDisposable
 
     public RelayCommand ExportFrameCommand { get; }
 
+    public RelayCommand EditFrameCommand { get; }
+
+    public void Dispose()
+    {
+        if (!disposable.IsDisposed)
+        {
+            disposable.Dispose();
+        }
+    }
+
+    private void InitSubscriptions()
+    {
+        if (SynchronizationContext.Current == null)
+        {
+            throw new InvalidOperationException("SynchronizationContext.Current can't be null");
+        }
+
+        icoService
+            .Frames
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(UpdateItems)
+            .DisposeWith(disposable);
+    }
+
+    private void UpdateItems(ItemCollectionAction<IcoFrame> action)
+    {
+        switch (action.Type)
+        {
+            case ItemCollectionActionType.Reset:
+                baseItems.Set(action.Items.Select(x => new IcoFramesItemViewModel(x, this)));
+                break;
+
+            case ItemCollectionActionType.Add:
+                action
+                    .Items
+                    .Select(x => new IcoFramesItemViewModel(x, this))
+                    .ForEach(x => baseItems.Add(x));
+                break;
+
+            case ItemCollectionActionType.Remove:
+                var itemToRemove = baseItems.FirstOrDefault(x => x.Frame.Equals(action.Items[0]));
+
+                if (itemToRemove != null)
+                {
+                    baseItems.Remove(itemToRemove);
+                }
+
+                break;
+        }
+
+        Invalidate(nameof(IsEmpty));
+    }
+
     private async void AddFrame()
     {
         var fileNames = await fileService.PickFilesForOpenAsync(appService.SupportedImageTypes);
@@ -140,56 +193,5 @@ public class IcoFramesViewModel : ViewModel, IDisposable
                 FileName = fileName
             });
         }
-    }
-
-    public void Dispose()
-    {
-        if (!disposable.IsDisposed)
-        {
-            disposable.Dispose();
-        }
-    }
-
-    private void InitSubscriptions()
-    {
-        if (SynchronizationContext.Current == null)
-        {
-            throw new InvalidOperationException("SynchronizationContext.Current can't be null");
-        }
-
-        icoService
-            .Frames
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(UpdateItems)
-            .DisposeWith(disposable);
-    }
-
-    private void UpdateItems(ItemCollectionAction<IcoFrame> action)
-    {
-        switch (action.Type)
-        {
-            case ItemCollectionActionType.Reset:
-                baseItems.Set(action.Items.Select(x => new IcoFramesItemViewModel(x, ExportFrameCommand, RemoveFrameCommand)));
-                break;
-
-            case ItemCollectionActionType.Add:
-                action
-                    .Items
-                    .Select(x => new IcoFramesItemViewModel(x, ExportFrameCommand, RemoveFrameCommand))
-                    .ForEach(x => baseItems.Add(x));
-                break;
-
-            case ItemCollectionActionType.Remove:
-                var itemToRemove = baseItems.FirstOrDefault(x => x.Frame.Equals(action.Items[0]));
-
-                if (itemToRemove != null)
-                {
-                    baseItems.Remove(itemToRemove);
-                }
-
-                break;
-        }
-
-        Invalidate(nameof(IsEmpty));
     }
 }

@@ -148,7 +148,7 @@
                                     Width="64"
                                     Height="64"
                                     Stretch="None"
-                                    Source="{x:Bind h:Converters.LoadImage(Frame.Image)}"/>
+                                    Source="{x:Bind h:Converters.LoadImage(Frame.Image, Frame.Width, Frame.Height)}"/>
 
                                 <StackPanel 
                                     Margin="12,0,12,0"

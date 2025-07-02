@@ -44,30 +44,41 @@ static class Converters
         return viewModel?.Frame?.Image;
     }
 
-    public static ImageSource? LoadImage(ImageData imageData)
+    public static ImageSource? LoadImage(ImageData imageData, int width, int height)
     {
-        return LoadImage(imageData, 48);
+        return LoadImage(imageData, width, height, 48);
     }
 
-    public static ImageSource? LoadImage(ImageData imageData, double maxSize)
+    public static ImageSource? LoadImage(ImageData imageData, int width, int height, double maxSize)
     {
         if (imageData == null || imageData.Size == 0)
         {
             return null;
         }
 
-        using var stream = imageData.GetStream().AsRandomAccessStream();
+        try
+        {
+            using var stream = imageData.GetStream().AsRandomAccessStream();
 
-        var bitmapImage = new BitmapImage();
-        bitmapImage.SetSource(stream);
+            var bitmapImage = new BitmapImage();
 
-        var factor = maxSize / Math.Max(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+            var factor = maxSize / Math.Max(width, height);
 
-        bitmapImage.DecodePixelWidth = Convert.ToInt32(factor * bitmapImage.PixelWidth);
-        bitmapImage.DecodePixelHeight = Convert.ToInt32(factor * bitmapImage.PixelHeight);
-        bitmapImage.DecodePixelType = DecodePixelType.Logical;
+            if (factor < 1)
+            {
+                bitmapImage.DecodePixelWidth = Convert.ToInt32(factor * width);
+                bitmapImage.DecodePixelHeight = Convert.ToInt32(factor * height);
+                bitmapImage.DecodePixelType = DecodePixelType.Logical;
+            }
 
-        return bitmapImage;
+            bitmapImage.SetSource(stream);
+
+            return bitmapImage;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public static Visibility VisibleIf(object value)

@@ -27,15 +27,14 @@ using IcoApp.Core.Models;
 
 public class IcoFramesItemViewModel : ViewModel, IComparable<IcoFramesItemViewModel>
 {
-    public IcoFramesItemViewModel(IcoFrame frame, RelayCommand exportCommand, RelayCommand removeCommand)
+    public IcoFramesItemViewModel(IcoFrame frame, IcoFramesViewModel framesViewModel)
     {
         ArgumentNullException.ThrowIfNull(frame);
-        ArgumentNullException.ThrowIfNull(exportCommand);
-        ArgumentNullException.ThrowIfNull(removeCommand);
+        ArgumentNullException.ThrowIfNull(framesViewModel);
 
         Frame = frame;
-        ExportCommand = exportCommand;
-        RemoveCommand = removeCommand;
+        ExportCommand = framesViewModel.ExportFrameCommand;
+        RemoveCommand = framesViewModel.RemoveFrameCommand;
 
         Text = $"{Frame.Width}x{Frame.Height}";
         Description = Frame.Type == IcoFrameType.Png? "PNG": $"{Frame.BitCount} bit";
