@@ -32,22 +32,22 @@ using IcoApp.Core.Services;
 
 public class FrameAddCommand : UndoableAppCommand<FrameAddCommand.Parameters>, IDisposable
 {
-    private readonly IIcoFileService icoFileService;
+    private readonly ItemCollection<Frame> icoFileFrames;
 
-    private IImmutableList<Frame>? frames;
+    private IImmutableList<Frame>? affectedFrames;
 
-    public FrameAddCommand(IIcoFileService icoFileService)
+    public FrameAddCommand(ItemCollection<Frame> icoFileFrames)
     {
-        ArgumentNullException.ThrowIfNull(icoFileService);
+        ArgumentNullException.ThrowIfNull(icoFileFrames);
 
-        this.icoFileService = icoFileService;
+        this.icoFileFrames = icoFileFrames;
     }
 
     void IDisposable.Dispose()
     {
         if (CanRedo)
         {
-            frames?.ForEach(x => x.Dispose());
+            affectedFrames?.ForEach(x => x.Dispose());
         }
     }
 
@@ -66,9 +66,9 @@ public class FrameAddCommand : UndoableAppCommand<FrameAddCommand.Parameters>, I
             frames.Add(CreateFrame(dataStream));
         }
 
-        await icoFileService.Frames.AddAsync(frames);
+        await this.icoFileFrames.AddAsync(frames);
 
-        this.frames = frames.ToImmutableArray();
+        this.affectedFrames = frames.ToImmutableArray();
 
         return true;
     }
@@ -129,14 +129,14 @@ public class FrameAddCommand : UndoableAppCommand<FrameAddCommand.Parameters>, I
 
     protected override Task Undo()
     {
-        frames?.ForEach(x => icoFileService.Frames.Remove(x));
+        affectedFrames?.ForEach(x => icoFileFrames.Remove(x));
 
         return Task.CompletedTask;
     }
 
     protected override async Task Redo()
     {
-        await icoFileService.Frames.AddAsync(frames ?? []);
+        await icoFileFrames.AddAsync(affectedFrames ?? []);
     }
 
     public sealed class Parameters

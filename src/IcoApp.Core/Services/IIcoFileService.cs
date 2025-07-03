@@ -32,7 +32,7 @@ public interface IIcoFileService
 
     IObservable<string?> FileName { get; }
 
-    ItemCollectionBase<Frame> Frames { get; }
+    IObservable<ItemCollectionAction<Frame>> Frames { get; }
 
     IObservable<bool> CanUndo { get; }
 

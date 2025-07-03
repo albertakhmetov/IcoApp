@@ -37,6 +37,8 @@ internal class IcoFileService : IIcoFileService, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
 
+    private readonly ItemCollection<Frame> baseFrames;
+
     private readonly BehaviorSubject<bool> modifiedSubject;
     private readonly BehaviorSubject<string?> fileNameSubject;
 
@@ -48,7 +50,9 @@ internal class IcoFileService : IIcoFileService, IDisposable
         modifiedSubject = new BehaviorSubject<bool>(false);
         fileNameSubject = new BehaviorSubject<string?>(null);
 
-        Frames = new ItemCollection<Frame>();
+        baseFrames = new ItemCollection<Frame>();
+
+        Frames = baseFrames.AsObservable();
 
         Modified = modifiedSubject.DistinctUntilChanged().Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
         FileName = fileNameSubject.Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
@@ -62,7 +66,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     public IObservable<string?> FileName { get; }
 
-    public ItemCollectionBase<Frame> Frames { get; }
+    public IObservable<ItemCollectionAction<Frame>> Frames { get; }
 
     public IObservable<bool> CanUndo { get; }
 
@@ -74,7 +78,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     public IAppCommand<FrameAddCommand.Parameters> CreateFrameAddCommand()
     {
-        return new FrameAddCommand(this)
+        return new FrameAddCommand(this.baseFrames)
         {
             UndoableHistoryManager = undoableHistoryManager
         };
@@ -82,7 +86,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     public IAppCommand<FrameRemoveCommand.Parameters> CreateFrameRemoveCommand()
     {
-        return new FrameRemoveCommand(this)
+        return new FrameRemoveCommand(this.baseFrames)
         {
             UndoableHistoryManager = undoableHistoryManager
         };
@@ -90,12 +94,12 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     public Task CreateNew()
     {
-        foreach (var i in Frames.List)
+        foreach (var i in baseFrames.List)
         {
             i.Dispose();
         }
 
-        Frames.RemoveAll();
+        baseFrames.RemoveAll();
 
         undoableHistoryManager.Clear();
         fileNameSubject.OnNext(null);
@@ -112,7 +116,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
         var newFrames = framesFromStream.Select(x => CreateFrame(x)).ToArray();
 
-        await Frames.SetAsync(newFrames);
+        await baseFrames.SetAsync(newFrames);
 
         undoableHistoryManager.Clear();
         fileNameSubject.OnNext(fileName);
@@ -148,7 +152,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
             throw new InvalidOperationException("Can't save a file without a name.");
         }
 
-        var framesToStream = Frames.List.Select(x => CreateFrame(x)).ToArray();
+        var framesToStream = baseFrames.List.Select(x => CreateFrame(x)).ToArray();
 
         using var stream = File.OpenWrite(fileName);
         IcoFile.Save(stream, framesToStream);

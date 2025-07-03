@@ -32,22 +32,22 @@ using IcoApp.Core.Services;
 
 public class FrameRemoveCommand : UndoableAppCommand<FrameRemoveCommand.Parameters>, IDisposable
 {
-    private readonly IIcoFileService icoFileService;
+    private readonly ItemCollection<Frame> icoFileFrames;
 
-    private IImmutableList<Frame>? frames;
+    private IImmutableList<Frame>? affectedFrames;
 
-    public FrameRemoveCommand(IIcoFileService icoFileService)
+    public FrameRemoveCommand(ItemCollection<Frame> icoFileFrames)
     {
-        ArgumentNullException.ThrowIfNull(icoFileService);
+        ArgumentNullException.ThrowIfNull(icoFileFrames);
 
-        this.icoFileService = icoFileService;
+        this.icoFileFrames = icoFileFrames;
     }
 
     void IDisposable.Dispose()
     {
         if (CanUndo)
         {
-            frames?.ForEach(x => x.Dispose());
+            affectedFrames?.ForEach(x => x.Dispose());
         }
     }
 
@@ -59,27 +59,27 @@ public class FrameRemoveCommand : UndoableAppCommand<FrameRemoveCommand.Paramete
         }
 
         var removedFrames = parameters.RemoveAll
-            ? frames = icoFileService.Frames.RemoveAll()
-            : parameters.Frames.ForEach(x => icoFileService.Frames.Remove(x)).ToImmutableArray();
+            ? affectedFrames = icoFileFrames.RemoveAll()
+            : parameters.Frames.ForEach(x => icoFileFrames.Remove(x)).ToImmutableArray();
 
         if (removedFrames.Any() is false)
         {
             return Task.FromResult(false);
         }
 
-        frames = removedFrames;
+        affectedFrames = removedFrames;
 
         return Task.FromResult(true);
     }
 
     protected override async Task Undo()
     {
-        await icoFileService.Frames.AddAsync(frames ?? []);
+        await icoFileFrames.AddAsync(affectedFrames ?? []);
     }
 
     protected override Task Redo()
     {
-        frames?.ForEach(x => icoFileService.Frames.Remove(x));
+        affectedFrames?.ForEach(x => icoFileFrames.Remove(x));
         return Task.CompletedTask;
     }
 
