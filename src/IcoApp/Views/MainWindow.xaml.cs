@@ -54,8 +54,7 @@ public partial class MainWindow : Window
         ISystemEventsService systemEventsService,
         IAppCommandManager appCommandManager,
         IcoFileViewModel icoFileViewModel,
-        FramesViewModel framesViewModel,
-        URViewModel urViewModel)
+        FramesViewModel framesViewModel)
     {
         ArgumentNullException.ThrowIfNull(appService);
         ArgumentNullException.ThrowIfNull(settingsService);
@@ -69,7 +68,6 @@ public partial class MainWindow : Window
 
         IcoFileViewModel = icoFileViewModel;
         FramesViewModel = framesViewModel;
-        URViewModel = urViewModel;
         SettingsCommand = new RelayCommand(_ => appService.ShowSettings());
 
         this.InitializeComponent();
@@ -95,8 +93,6 @@ public partial class MainWindow : Window
     public IcoFileViewModel IcoFileViewModel { get; }
 
     public FramesViewModel FramesViewModel { get; }
-
-    public URViewModel URViewModel { get; }
 
     public RelayCommand SettingsCommand { get; }
 

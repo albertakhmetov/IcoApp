@@ -56,6 +56,9 @@ public class IcoFileViewModel : ViewModel, IDisposable
         OpenFileCommand = new RelayCommand(_ => OpenFile());
         SaveFileCommand = new RelayCommand(_ => SaveFile());
 
+        UndoCommand = new RelayCommand(_ => this.icoFileService.Undo());
+        RedoCommand = new RelayCommand(_ => this.icoFileService.Redo());
+
         InitSubscriptions();
     }
 
@@ -80,6 +83,10 @@ public class IcoFileViewModel : ViewModel, IDisposable
     public RelayCommand OpenFileCommand { get; }
 
     public RelayCommand SaveFileCommand { get; }
+
+    public RelayCommand UndoCommand { get; }
+
+    public RelayCommand RedoCommand { get; }
 
     public void Dispose()
     {
@@ -134,6 +141,18 @@ public class IcoFileViewModel : ViewModel, IDisposable
             .FileName
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(x => FileName = x)
+            .DisposeWith(disposable);
+
+        icoFileService
+            .CanUndo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(canUndo => UndoCommand.IsEnabled = canUndo)
+            .DisposeWith(disposable);
+
+        icoFileService
+            .CanRedo
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(canRedo => RedoCommand.IsEnabled = canRedo)
             .DisposeWith(disposable);
     }
 

@@ -123,16 +123,13 @@ public partial class App : Application
         builder.Services.AddSingleton<ISystemEventsService, SystemEventsService>();
 
         builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
-        builder.Services
-            .AddTransient<IAppCommand<FrameAddCommand.Parameters>, FrameAddCommand>();
-        builder.Services
-            .AddTransient<IAppCommand<FrameRemoveCommand.Parameters>, FrameRemoveCommand>();
-        builder.Services
-            .AddTransient<IAppCommand<ImageDataExportCommand.Parameters>, ImageDataExportCommand>();
+        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateFrameAddCommand());
+        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateFrameRemoveCommand());
+
+        builder.Services.AddTransient<IAppCommand<ImageDataExportCommand.Parameters>, ImageDataExportCommand>();
 
         builder.Services.AddSingleton<IcoFileViewModel>();
         builder.Services.AddSingleton<FramesViewModel>();
-        builder.Services.AddSingleton<URViewModel>();
         builder.Services.AddSingleton<SettingsViewModel>();
 
         builder.Services.AddKeyedSingleton<UserControl, ConfirmationDialogView>(nameof(ConfirmationDialogViewModel));

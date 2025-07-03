@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IcoApp.Core.Commands;
 using IcoApp.Core.Models;
 
 public interface IIcoFileService
@@ -32,6 +33,18 @@ public interface IIcoFileService
     IObservable<string?> FileName { get; }
 
     ItemCollectionBase<Frame> Frames { get; }
+
+    IObservable<bool> CanUndo { get; }
+
+    IObservable<bool> CanRedo { get; }
+
+    void Undo();
+
+    void Redo();
+
+    IAppCommand<FrameAddCommand.Parameters> CreateFrameAddCommand();
+
+    IAppCommand<FrameRemoveCommand.Parameters> CreateFrameRemoveCommand();
 
     Task CreateNew();
 

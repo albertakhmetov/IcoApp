@@ -36,19 +36,15 @@ using IcoApp.FileFormat.Internal;
 internal class IcoFileService : IIcoFileService, IDisposable
 {
     private readonly CompositeDisposable disposable = [];
-    private readonly IAppCommandManager appCommandManager;
 
     private readonly BehaviorSubject<bool> modifiedSubject;
     private readonly BehaviorSubject<string?> fileNameSubject;
 
+    private readonly UndoableHistoryManager undoableHistoryManager = new UndoableHistoryManager();
     private int savedExecutedCount = 0;
 
-    public IcoFileService(IAppCommandManager appCommandManager)
+    public IcoFileService()
     {
-        ArgumentNullException.ThrowIfNull(appCommandManager);
-
-        this.appCommandManager = appCommandManager;
-
         modifiedSubject = new BehaviorSubject<bool>(false);
         fileNameSubject = new BehaviorSubject<string?>(null);
 
@@ -56,6 +52,8 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
         Modified = modifiedSubject.DistinctUntilChanged().Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
         FileName = fileNameSubject.Throttle(TimeSpan.FromMilliseconds(50)).AsObservable();
+        CanUndo = undoableHistoryManager.CanUndo;
+        CanRedo = undoableHistoryManager.CanRedo;
 
         InitSubscriptions();
     }
@@ -66,6 +64,30 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     public ItemCollectionBase<Frame> Frames { get; }
 
+    public IObservable<bool> CanUndo { get; }
+
+    public IObservable<bool> CanRedo { get; }
+
+    public void Undo() => undoableHistoryManager.Undo();
+
+    public void Redo() => undoableHistoryManager.Redo();
+
+    public IAppCommand<FrameAddCommand.Parameters> CreateFrameAddCommand()
+    {
+        return new FrameAddCommand(this)
+        {
+            UndoableHistoryManager = undoableHistoryManager
+        };
+    }
+
+    public IAppCommand<FrameRemoveCommand.Parameters> CreateFrameRemoveCommand()
+    {
+        return new FrameRemoveCommand(this)
+        {
+            UndoableHistoryManager = undoableHistoryManager
+        };
+    }
+
     public Task CreateNew()
     {
         foreach (var i in Frames.List)
@@ -75,7 +97,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
         Frames.RemoveAll();
 
-        appCommandManager.ClearHistory();
+        undoableHistoryManager.Clear();
         fileNameSubject.OnNext(null);
         modifiedSubject.OnNext(false);
 
@@ -92,7 +114,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
         await Frames.SetAsync(newFrames);
 
-        appCommandManager.ClearHistory();
+        undoableHistoryManager.Clear();
         fileNameSubject.OnNext(fileName);
         modifiedSubject.OnNext(false);
     }
@@ -131,7 +153,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
         using var stream = File.OpenWrite(fileName);
         IcoFile.Save(stream, framesToStream);
 
-        savedExecutedCount = await appCommandManager.ExecutedCount.FirstAsync();
+        savedExecutedCount = await undoableHistoryManager.ExecutedCount.FirstAsync();
         modifiedSubject.OnNext(false);
     }
 
@@ -168,7 +190,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     private void InitSubscriptions()
     {
-        appCommandManager
+        undoableHistoryManager
             .ExecutedCount
             .Subscribe(x => modifiedSubject.OnNext(x != savedExecutedCount))
             .DisposeWith(disposable);

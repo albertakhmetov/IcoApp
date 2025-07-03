@@ -26,17 +26,5 @@ using System.Threading.Tasks;
 
 public interface IAppCommandManager
 {
-    IObservable<bool> CanUndo { get; }
-
-    IObservable<bool> CanRedo { get; }
-
-    IObservable<int> ExecutedCount { get; }
-
     Task ExecuteAsync<T>(T parameters);
-
-    void ClearHistory();
-    
-    void Undo();
-
-    void Redo();
 }

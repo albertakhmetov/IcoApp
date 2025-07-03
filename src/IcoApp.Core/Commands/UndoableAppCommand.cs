@@ -32,12 +32,24 @@ public abstract class UndoableAppCommand<T> : IAppCommand<T>, IUndoable
 
     public bool IsExecuted { get; private set; } = false;
 
+    public IUndoableHistoryManager? UndoableHistoryManager { get; init; }
+
     async Task IAppCommand<T>.ExecuteAsync(T parameters)
     {
         ArgumentNullException.ThrowIfNull(parameters);
 
+        if (IsExecuted)
+        {
+            throw new InvalidOperationException("The command is already executed");
+        }
+
         IsExecuted = await ExecuteAsync(parameters);
-        CanUndo = IsExecuted;
+
+        if (IsExecuted)
+        {
+            UndoableHistoryManager?.Push(this);
+            CanUndo = true;
+        }
     }
 
     async Task IUndoable.Undo()

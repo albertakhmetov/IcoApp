@@ -55,15 +55,15 @@
                     <AppBarSeparator/>
 
                     <Button 
-                        Command="{x:Bind URViewModel.UndoCommand}"
-                        IsEnabled="{x:Bind URViewModel.UndoCommand.IsEnabled, Mode=OneWay}">
+                        Command="{x:Bind IcoFileViewModel.UndoCommand}"
+                        IsEnabled="{x:Bind IcoFileViewModel.UndoCommand.IsEnabled, Mode=OneWay}">
                         
                         <FontIcon Glyph="&#xE7A7;" />
                     </Button>
 
                     <Button
-                        Command="{x:Bind URViewModel.RedoCommand}"
-                        IsEnabled="{x:Bind URViewModel.RedoCommand.IsEnabled, Mode=OneWay}">
+                        Command="{x:Bind IcoFileViewModel.RedoCommand}"
+                        IsEnabled="{x:Bind IcoFileViewModel.RedoCommand.IsEnabled, Mode=OneWay}">
                         
                         <FontIcon Glyph="&#xE7A6;" />
                     </Button>
