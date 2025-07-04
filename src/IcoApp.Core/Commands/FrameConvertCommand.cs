@@ -56,35 +56,35 @@ public class FrameConvertCommand : UndoableAppCommand<FrameConvertCommand.Parame
         }
 
         using var imageStream = originalFrame.Image.GetStream();
-        using var bitmap = Image.FromStream(imageStream);
-        using var convertedStream = new MemoryStream();
+        using var image = Image.FromStream(imageStream);
+        using var convertedImageStream = new MemoryStream();
 
         if (originalFrame is FrameWithMask)
         {
-            bitmap.Save(convertedStream, ImageFormat.Png);
+            image.Save(convertedImageStream, ImageFormat.Png);
 
-            convertedStream.Position = 0;
+            convertedImageStream.Position = 0;
 
             generatedFrame = new Frame()
             {
                 Width = originalFrame.Width,
                 Height = originalFrame.Height,
-                Image = new ImageData(convertedStream)
+                Image = new ImageData(convertedImageStream)
             };
         }
         else
         {
-            bitmap.Save(convertedStream, ImageFormat.Bmp);
+            image.Save(convertedImageStream, ImageFormat.Bmp);
 
             imageStream.Position = 0;
-            convertedStream.Position = 0;
+            convertedImageStream.Position = 0;
 
             generatedFrame = new FrameWithMask()
             {
                 Width = originalFrame.Width,
                 Height = originalFrame.Height,
                 Image = new ImageData(imageStream),
-                OriginalImage = new ImageData(convertedStream)
+                OriginalImage = new ImageData(convertedImageStream)
             };
         }
 

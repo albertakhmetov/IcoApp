@@ -193,14 +193,14 @@ public class FramesViewModel : ViewModel, IDisposable
             return;
         }
 
-        var fileType = frame is FrameWithMask ? FileType.Bmp : FileType.Png;
+        var fileType = FileType.Png;
         var fileName = await fileService.PickFileForSaveAsync([fileType], $"frame{fileType.Extension}");
 
         if (string.IsNullOrEmpty(fileName) is false)
         {
             await appCommandManager.ExecuteAsync(new ImageDataExportCommand.Parameters
             {
-                Image = frame is FrameWithMask frameWithMask ? frameWithMask.OriginalImage : frame.Image,
+                Image = frame.Image,
                 FileName = fileName
             });
         }
