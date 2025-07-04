@@ -37,7 +37,7 @@ public class FramesItemViewModel : ViewModel, IComparable<FramesItemViewModel>
         RemoveCommand = framesViewModel.RemoveFrameCommand;
 
         Text = $"{Frame.Width}x{Frame.Height}";
-        Description = Frame.Type == FrameType.Png? "PNG": $"{Frame.BitCount} bit";
+        Description = Frame is FrameWithMask ? $"{Frame.BitCount} bit" : "PNG";
     }
 
     public Frame Frame { get; }

@@ -65,9 +65,9 @@ public class FramesViewModel : ViewModel, IDisposable
         Items = new ReadOnlyObservableCollection<FramesItemViewModel>(baseItems);
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
-        RemoveFrameCommand = new RelayCommand(x => RemoveFrame((x as FramesItemViewModel)?.Frame));
+        RemoveFrameCommand = new RelayCommand(x => RemoveFrame(x as Frame));
         RemoveAllFramesCommand = new RelayCommand(x => RemoveAllFrames());
-        ExportFrameCommand = new RelayCommand(x => ExportFrame((x as FramesItemViewModel)?.Frame));
+        ExportFrameCommand = new RelayCommand(x => ExportFrame(x as Frame));
 
         InitSubscriptions();
     }
@@ -179,7 +179,7 @@ public class FramesViewModel : ViewModel, IDisposable
             return;
         }
 
-        var fileType = frame.Type == FrameType.Bitmap ? FileType.Bmp : FileType.Png;
+        var fileType = frame is FrameWithMask ? FileType.Bmp : FileType.Png;
 
         var fileName = await fileService.PickFileForSaveAsync([fileType], $"frame{fileType.Extension}");
 

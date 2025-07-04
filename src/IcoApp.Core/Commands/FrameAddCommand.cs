@@ -91,7 +91,12 @@ public class FrameAddCommand : UndoableAppCommand<FrameAddCommand.Parameters>, I
         if (image.RawFormat.Equals(ImageFormat.Png))
         {
             dataStream.Position = 0;
-            return new Frame(image.Width, image.Height, dataStream);
+            return new Frame()
+            {
+                Width = image.Width,
+                Height = image.Height,
+                Image = new ImageData(dataStream)
+            };
         }
         else
         {
@@ -103,11 +108,23 @@ public class FrameAddCommand : UndoableAppCommand<FrameAddCommand.Parameters>, I
             if (image.RawFormat.Equals(ImageFormat.Bmp) && TryGetBitCount(image.PixelFormat, out var bitCount))
             {
                 dataStream.Position = 0;
-                return new Frame(image.Width, image.Height, bitCount, dataStream, imageStream);
+                return new FrameWithMask()
+                {
+                    Width = image.Width,
+                    Height = image.Height,
+                    BitCount = bitCount,
+                    Image = new ImageData(imageStream),
+                    OriginalImage = new ImageData(dataStream)
+                };
             }
             else
             {
-                return new Frame(image.Width, image.Height, imageStream);
+                return new Frame()
+                {
+                    Width = image.Width,
+                    Height = image.Height,
+                    Image = new ImageData(dataStream)
+                };
             }
         }
     }

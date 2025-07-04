@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class ImageData : IDisposable
+public sealed class ImageData : IDisposable
 {
     public readonly static ImageData Empty = new(null);
 
@@ -50,21 +50,32 @@ public class ImageData : IDisposable
         }
     }
 
+    ~ImageData()
+    {
+        Dispose(false);
+    }
+
     public bool IsEmpty => Size == 0;
 
     public int Size { get; }
 
     public void Dispose()
     {
-        if (!IsEmpty && !isDisposed)
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-            isDisposed = true;
-        }
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     public Stream GetStream()
     {
         return new MemoryStream(buffer, 0, Size, false, false);
+    }
+
+    private void Dispose(bool _)
+    {
+        if (!IsEmpty && !isDisposed)
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+            isDisposed = true;
+        }
     }
 }

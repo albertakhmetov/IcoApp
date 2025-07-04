@@ -133,12 +133,12 @@
                                             Text="Export frame"
                                             Icon="Download"
                                             Command="{x:Bind ExportCommand}"
-                                            CommandParameter="{x:Bind}"/>
+                                            CommandParameter="{x:Bind Frame, Mode=OneWay}"/>
                                         <MenuFlyoutItem 
                                             Text="Remove frame"
                                             Icon="Delete"
                                             Command="{x:Bind RemoveCommand}"
-                                            CommandParameter="{x:Bind Mode=OneWay}"/>
+                                            CommandParameter="{x:Bind Frame, Mode=OneWay}"/>
                                     </MenuFlyout>
                                 </Grid.ContextFlyout>
 

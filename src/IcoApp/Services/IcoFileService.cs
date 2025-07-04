@@ -132,14 +132,24 @@ internal class IcoFileService : IIcoFileService, IDisposable
             using var originalImageStream = new MemoryStream(bitmap.OriginalImageData.ToArray());
             using var maskStream = new MemoryStream(bitmap.ImageData.ToArray());
 
-            return new Frame(frame.Width, frame.Height, bitmap.BitCount, originalImageStream, imageStream)
+            return new FrameWithMask()
             {
+                Width = frame.Width,
+                Height = frame.Height,
+                BitCount = bitmap.BitCount,
+                Image = new ImageData(imageStream),
+                OriginalImage = new ImageData(originalImageStream),
                 MaskImage = new ImageData(maskStream)
             };
         }
         else
         {
-            return new Frame(frame.Width, frame.Height, imageStream);
+            return new Frame()
+            {
+                Width = frame.Width,
+                Height = frame.Height,
+                Image = new ImageData(imageStream)
+            };
         }
     }
 
@@ -163,16 +173,16 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     private IIcoFileFrame CreateFrame(Frame frame)
     {
-        if (frame.Type == FrameType.Bitmap)
+        if (frame is FrameWithMask frameWithMask)
         {
-            using var imageStream = frame.OriginalImage.GetStream();
-            using var maskStream = frame.MaskImage?.GetStream();
+            using var imageStream = frameWithMask.OriginalImage.GetStream();
+            using var maskStream = frameWithMask.MaskImage?.GetStream();
 
             return IcoFileBitmapFrame.CreateFromImages(imageStream, maskStream);
         }
         else
         {
-            return IcoFilePngFrame.CreateFromImage(frame.OriginalImage.GetStream());
+            return IcoFilePngFrame.CreateFromImage(frame.Image.GetStream());
         }
     }
 

@@ -20,45 +20,17 @@ using System.Collections.Immutable;
 
 namespace IcoApp.Core.Models;
 
-public sealed class Frame : IComparable<Frame>, IDisposable
+public class Frame : IComparable<Frame>, IDisposable
 {
-    public Frame(int width, int height, Stream? sourceStream)
-    {
-        Width = width;
-        Height = height;
-        BitCount = 32;
-
-        OriginalImage = new ImageData(sourceStream);
-        Image = OriginalImage;
-        Type = FrameType.Png;
-    }
-
-    public Frame(int width, int height, int bitCount, Stream? sourceStream, Stream? imageStream)
-    {
-        Width = width;
-        Height = height;
-        BitCount = bitCount;
-
-        OriginalImage = new ImageData(sourceStream);
-        Image = new ImageData(imageStream);
-        Type = FrameType.Bitmap;
-    }
-
     public bool IsDisposed { get; private set; } = false;
 
-    public int Width { get; }
+    public required int Width { get; init; }
 
-    public int Height { get; }
+    public required int Height { get; init; }
 
-    public int BitCount { get; }
+    public int BitCount { get; init; } = 32;
 
-    public FrameType Type { get; }
-
-    public ImageData Image { get; }
-
-    public ImageData OriginalImage { get; init; }
-
-    public ImageData? MaskImage { get; init; }
+    public required ImageData Image { get; init; }
 
     public int CompareTo(Frame? other)
     {
@@ -71,14 +43,30 @@ public sealed class Frame : IComparable<Frame>, IDisposable
         return result == 0 ? BitCount.CompareTo(other.BitCount) : result;
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         if (!IsDisposed)
         {
             Image.Dispose();
+            IsDisposed = true;
+        }
+    }
+}
 
+public class FrameWithMask : Frame
+{
+    public required ImageData OriginalImage { get; init; }
+
+    public ImageData? MaskImage { get; init; }
+
+    public override void Dispose()
+    {
+        if (!IsDisposed)
+        {
             OriginalImage?.Dispose();
             MaskImage?.Dispose();
         }
+
+        base.Dispose();
     }
 }
