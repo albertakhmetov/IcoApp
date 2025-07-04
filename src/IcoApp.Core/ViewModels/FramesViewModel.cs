@@ -66,6 +66,7 @@ public class FramesViewModel : ViewModel, IDisposable
 
         AddFrameCommand = new RelayCommand(_ => AddFrame());
         RemoveFrameCommand = new RelayCommand(x => RemoveFrame(x as Frame));
+        ConvertFrameCommand = new RelayCommand(x => ConvertFrame(x as Frame));
         RemoveAllFramesCommand = new RelayCommand(x => RemoveAllFrames());
         ExportFrameCommand = new RelayCommand(x => ExportFrame(x as Frame));
 
@@ -85,6 +86,8 @@ public class FramesViewModel : ViewModel, IDisposable
     public RelayCommand AddFrameCommand { get; }
 
     public RelayCommand RemoveFrameCommand { get; }
+
+    public RelayCommand ConvertFrameCommand { get; }
 
     public RelayCommand RemoveAllFramesCommand { get; }
 
@@ -164,6 +167,17 @@ public class FramesViewModel : ViewModel, IDisposable
         }
     }
 
+    private async void ConvertFrame(Frame? frame)
+    {
+        if (frame is not null)
+        {
+            await appCommandManager.ExecuteAsync(new FrameConvertCommand.Parameters
+            {
+                Frame = frame
+            });
+        }
+    }
+
     private async void RemoveAllFrames()
     {
         await appCommandManager.ExecuteAsync(new FrameRemoveCommand.Parameters
@@ -180,14 +194,13 @@ public class FramesViewModel : ViewModel, IDisposable
         }
 
         var fileType = frame is FrameWithMask ? FileType.Bmp : FileType.Png;
-
         var fileName = await fileService.PickFileForSaveAsync([fileType], $"frame{fileType.Extension}");
 
         if (string.IsNullOrEmpty(fileName) is false)
         {
             await appCommandManager.ExecuteAsync(new ImageDataExportCommand.Parameters
             {
-                Image = frame.Image,
+                Image = frame is FrameWithMask frameWithMask ? frameWithMask.OriginalImage : frame.Image,
                 FileName = fileName
             });
         }

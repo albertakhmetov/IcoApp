@@ -42,9 +42,7 @@ public interface IIcoFileService
 
     void Redo();
 
-    IAppCommand<FrameAddCommand.Parameters> CreateFrameAddCommand();
-
-    IAppCommand<FrameRemoveCommand.Parameters> CreateFrameRemoveCommand();
+    IAppCommand<T> CreateCommand<T>();
 
     Task CreateNew();
 

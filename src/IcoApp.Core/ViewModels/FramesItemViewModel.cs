@@ -35,9 +35,11 @@ public class FramesItemViewModel : ViewModel, IComparable<FramesItemViewModel>
         Frame = frame;
         ExportCommand = framesViewModel.ExportFrameCommand;
         RemoveCommand = framesViewModel.RemoveFrameCommand;
+        ConvertCommand = framesViewModel.ConvertFrameCommand;
 
         Text = $"{Frame.Width}x{Frame.Height}";
         Description = Frame is FrameWithMask ? $"{Frame.BitCount} bit" : "PNG";
+        ConvertCommandText = Frame is FrameWithMask ? "Convert to PNG" : "Convert to Bitmap";
     }
 
     public Frame Frame { get; }
@@ -46,9 +48,13 @@ public class FramesItemViewModel : ViewModel, IComparable<FramesItemViewModel>
 
     public string Description { get; }
 
+    public string ConvertCommandText { get; }
+
     public RelayCommand ExportCommand { get; }
 
     public RelayCommand RemoveCommand { get; }
+
+    public RelayCommand ConvertCommand { get; }
 
     public int CompareTo(FramesItemViewModel? other)
     {

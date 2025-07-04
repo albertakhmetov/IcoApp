@@ -134,6 +134,12 @@
                                             Icon="Download"
                                             Command="{x:Bind ExportCommand}"
                                             CommandParameter="{x:Bind Frame, Mode=OneWay}"/>
+                                        <MenuFlyoutSeparator/>
+                                        <MenuFlyoutItem 
+                                            Text="{x:Bind ConvertCommandText}"
+                                            Icon="Refresh"
+                                            Command="{x:Bind ConvertCommand}"
+                                            CommandParameter="{x:Bind Frame, Mode=OneWay}"/>
                                         <MenuFlyoutItem 
                                             Text="Remove frame"
                                             Icon="Delete"

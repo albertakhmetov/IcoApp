@@ -123,8 +123,9 @@ public partial class App : Application
         builder.Services.AddSingleton<ISystemEventsService, SystemEventsService>();
 
         builder.Services.AddSingleton<IAppCommandManager, AppCommandManager>();
-        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateFrameAddCommand());
-        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateFrameRemoveCommand());
+        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateCommand<FrameAddCommand.Parameters>());
+        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateCommand<FrameRemoveCommand.Parameters>());
+        builder.Services.AddTransient(x => x.GetRequiredService<IIcoFileService>().CreateCommand<FrameConvertCommand.Parameters>());
 
         builder.Services.AddTransient<IAppCommand<ImageDataExportCommand.Parameters>, ImageDataExportCommand>();
 

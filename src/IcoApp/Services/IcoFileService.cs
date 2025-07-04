@@ -26,12 +26,14 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using IcoApp.Core.Commands;
 using IcoApp.Core.Helpers;
 using IcoApp.Core.Models;
 using IcoApp.Core.Services;
 using IcoApp.FileFormat;
 using IcoApp.FileFormat.Internal;
+using Microsoft.Extensions.Logging;
 
 internal class IcoFileService : IIcoFileService, IDisposable
 {
@@ -76,20 +78,33 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
     public void Redo() => undoableHistoryManager.Redo();
 
-    public IAppCommand<FrameAddCommand.Parameters> CreateFrameAddCommand()
+    public IAppCommand<T> CreateCommand<T>()
     {
-        return new FrameAddCommand(this.baseFrames)
+        if (typeof(T) == typeof(FrameAddCommand.Parameters))
         {
-            UndoableHistoryManager = undoableHistoryManager
-        };
-    }
-
-    public IAppCommand<FrameRemoveCommand.Parameters> CreateFrameRemoveCommand()
-    {
-        return new FrameRemoveCommand(this.baseFrames)
+            return (IAppCommand<T>)new FrameAddCommand(baseFrames)
+            {
+                UndoableHistoryManager = undoableHistoryManager
+            };
+        }
+        else if (typeof(T) == typeof(FrameRemoveCommand.Parameters))
         {
-            UndoableHistoryManager = undoableHistoryManager
-        };
+            return (IAppCommand<T>)new FrameRemoveCommand(baseFrames)
+            {
+                UndoableHistoryManager = undoableHistoryManager
+            };
+        }
+        else if (typeof(T) == typeof(FrameConvertCommand.Parameters))
+        {
+            return (IAppCommand<T>)new FrameConvertCommand(baseFrames)
+            {
+                UndoableHistoryManager = undoableHistoryManager
+            };
+        }
+        else
+        {
+            throw new NotSupportedException($"{typeof(T).Name} is not supported");
+        }
     }
 
     public Task CreateNew()
