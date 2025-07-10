@@ -116,6 +116,7 @@ internal class IcoFileService : IIcoFileService, IDisposable
 
         baseFrames.RemoveAll();
 
+        savedExecutedCount = 0;
         undoableHistoryManager.Clear();
         fileNameSubject.OnNext(null);
         modifiedSubject.OnNext(false);
